@@ -1,0 +1,6 @@
+parent_config: https://gist.githubusercontent.com/RISCfuture/c57d132e5e0160a768df1625e20ae3b8/raw/.swiftlint.yml
+
+# Disable redundant_self_in_closure because explicit self. is required
+# for Swift 6.0 compatibility after `guard let self else { return }`
+disabled_rules:
+  - redundant_self_in_closure
