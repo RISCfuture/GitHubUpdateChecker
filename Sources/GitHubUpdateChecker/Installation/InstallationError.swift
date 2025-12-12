@@ -178,7 +178,7 @@
         case .denied:
           return String(
             localized:
-              "Click \"Install Update\" again and enter your administrator password when prompted.",
+              "Click “Install Update” again and enter your administrator password when prompted.",
             bundle: .module
           )
         case .failed:
@@ -253,7 +253,7 @@
       switch self {
         case .unsupportedFileType(let type):
           return String(
-            localized: "The file type \"\(type)\" cannot be automatically installed.",
+            localized: "The file type “\(type)” cannot be automatically installed.",
             bundle: .module
           )
         case .appInUse:

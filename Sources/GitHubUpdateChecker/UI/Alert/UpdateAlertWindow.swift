@@ -101,7 +101,7 @@
       let alert = NSAlert()
       alert.messageText = "\(appName) is up to date"
       alert.informativeText =
-        "You're running version \(currentVersion), which is the latest version available."
+        "You’re running version \(currentVersion), which is the latest version available."
       alert.alertStyle = .informational
       alert.addButton(withTitle: "OK")
       alert.runModal()
