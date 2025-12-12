@@ -9,6 +9,7 @@ private enum UserDefaultsKeys {
   static let lastCheckTimestamp = prefix + "lastCheckTimestamp"
   static let skippedVersions = prefix + "skippedVersions"
   static let checkForPrereleases = prefix + "checkForPrereleases"
+  static let userDeclinedMoveToApplications = prefix + "userDeclinedMoveToApplications"
 }
 
 /// Manages user preferences for update checking behavior.
@@ -119,6 +120,16 @@ public final class UpdatePreferences {
     }
   }
 
+  /// Whether the user has declined to move the app to the Applications folder
+  public var userDeclinedMoveToApplications: Bool {
+    didSet {
+      defaults.set(
+        userDeclinedMoveToApplications,
+        forKey: UserDefaultsKeys.userDeclinedMoveToApplications
+      )
+    }
+  }
+
   /// Creates a new preferences instance
   /// - Parameter defaults: The UserDefaults instance to use for storage
   public init(defaults: UserDefaults = .standard) {
@@ -149,6 +160,9 @@ public final class UpdatePreferences {
     }
 
     self.checkForPrereleases = defaults.bool(forKey: UserDefaultsKeys.checkForPrereleases)
+    self.userDeclinedMoveToApplications = defaults.bool(
+      forKey: UserDefaultsKeys.userDeclinedMoveToApplications
+    )
   }
 
   /// Mark a version as skipped so it won't trigger update alerts
@@ -176,5 +190,6 @@ public final class UpdatePreferences {
     lastCheckTimestamp = nil
     skippedVersions = []
     checkForPrereleases = false
+    userDeclinedMoveToApplications = false
   }
 }

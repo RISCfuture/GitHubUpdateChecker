@@ -18,6 +18,7 @@ it offers a modern Swift implementation with async/await support and SwiftUI int
 - **Native SwiftUI Interface**: Beautiful update dialogs with Markdown-rendered release notes
 - **Flexible Downloads**: Adapts to your app's sandbox entitlements automatically
 - **Version Management**: Users can skip versions or be reminded later
+- **Move to Applications**: Prompt users to install your app properly on first launch
 - **No Authentication Required**: Works with any public GitHub repository
 
 ### Quick Start
@@ -60,8 +61,13 @@ struct MyApp: App {
 
 - <doc:ConfiguringPreferences>
 - <doc:SwiftUIIntegration>
+- <doc:MovingToApplications>
 - ``UpdatePreferences``
 - ``UpdateCadence``
+
+### Installation
+
+- ``AppMover``
 
 ### Update Results
 
