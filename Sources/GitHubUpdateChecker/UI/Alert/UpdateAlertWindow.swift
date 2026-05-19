@@ -13,7 +13,6 @@
     // MARK: - Instance Properties
 
     private var window: NSWindow?
-    private var hostingView: NSHostingView<AnyView>?
     private var updateAlertModel: UpdateAlertModel?
     private weak var parentChecker: GitHubUpdateChecker?
 
@@ -149,7 +148,6 @@
     public func dismiss() {
       window?.close()
       window = nil
-      hostingView = nil
       updateAlertModel = nil
     }
 
@@ -188,7 +186,6 @@
           let canInstall = canAutoInstall(fileURL: fileURL)
           let view = DownloadCompleteView(
             fileName: fileName,
-            fileURL: fileURL,
             canInstall: canInstall,
             onRevealInFinder: {
               model.onRevealInFinder(fileURL)
@@ -252,7 +249,6 @@
         window.styleMask = styleMask
 
         window.setContentSize(newHostingView.fittingSize)
-        hostingView = newHostingView
       } else {
         // Create new window
         showWindow(with: view, title: title, closable: closable)
@@ -287,7 +283,6 @@
       NSApp.activate(ignoringOtherApps: true)
 
       self.window = window
-      self.hostingView = hostingView
     }
   }
 
@@ -304,11 +299,6 @@
     /// The application version string (CFBundleShortVersionString)
     var appVersion: String? {
       object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-    }
-
-    /// The build number (CFBundleVersion)
-    var buildNumber: String? {
-      object(forInfoDictionaryKey: "CFBundleVersion") as? String
     }
   }
 #endif
