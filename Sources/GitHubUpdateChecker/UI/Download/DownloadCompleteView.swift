@@ -4,7 +4,6 @@
   /// A view shown when download completes
   struct DownloadCompleteView: View {
     let fileName: String
-    let fileURL: URL
     let canInstall: Bool
     let onRevealInFinder: () -> Void
     let onInstall: () -> Void
@@ -56,7 +55,6 @@
   #Preview("Auto Install (DMG)") {
     DownloadCompleteView(
       fileName: "MyApp-2.0.0.dmg",
-      fileURL: URL(fileURLWithPath: "/Users/test/Downloads/MyApp-2.0.0.dmg"),
       canInstall: true,
       onRevealInFinder: {},
       onInstall: {},
@@ -67,7 +65,6 @@
   #Preview("Manual Install (PKG)") {
     DownloadCompleteView(
       fileName: "MyApp-2.0.0.pkg",
-      fileURL: URL(fileURLWithPath: "/Users/test/Downloads/MyApp-2.0.0.pkg"),
       canInstall: false,
       onRevealInFinder: {},
       onInstall: {},
