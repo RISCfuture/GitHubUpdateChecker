@@ -134,6 +134,7 @@ prefs.resetToDefaults()
 ```
 
 This sets:
+
 - `updateCadence` to `.daily`
 - `automaticDownload` to `false`
 - `checkForPrereleases` to `false`

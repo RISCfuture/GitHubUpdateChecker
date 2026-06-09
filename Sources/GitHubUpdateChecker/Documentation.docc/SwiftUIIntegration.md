@@ -46,6 +46,7 @@ struct MyApp: App {
 ```
 
 The built-in UI handles:
+
 - Update available alert with release notes
 - Download progress with cancel option
 - Download completion with install option

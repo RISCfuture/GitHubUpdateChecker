@@ -166,7 +166,7 @@ This means the library works out of the box regardless of your app's sandbox con
 ## Documentation
 
 Full API documentation is available at
-https://riscfuture.github.io/GitHubUpdateChecker/documentation/githubupdatechecker/
+<https://riscfuture.github.io/GitHubUpdateChecker/documentation/githubupdatechecker/>
 
 To generate documentation locally:
 
@@ -195,6 +195,7 @@ mode, but contains code that fails Swift 6.1's stricter concurrency checking
 around `@StateObject` initialization. Apple relaxed these rules in Swift 6.2.
 
 **Workarounds:**
+
 - Use Swift 6.0 or Swift 6.2+
 - Wait for upstream fix in the [NetworkImage](https://github.com/gonzalezreal/NetworkImage) library
 

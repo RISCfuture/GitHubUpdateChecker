@@ -118,6 +118,7 @@ UpdatePreferences.shared.resetToDefaults()
 the move functionality is automatically disabled and the prompt never appears.
 
 This is because sandboxed apps cannot:
+
 - Move their own bundle
 - Write to `/Applications` without explicit user permission via security-scoped bookmarks
 - Relaunch themselves from a different location
