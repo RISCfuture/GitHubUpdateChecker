@@ -368,42 +368,36 @@ public final class GitHubUpdateChecker {
 
       // Start download progress in built-in UI if available
       model?.startDownload(fileName: asset.name) { [weak self] in
-        Task {
+        Task { @MainActor in
           await self?.downloader.cancelDownload()
-          await MainActor.run {
-            self?.isDownloading = false
-            model?.reset()
-          }
+          self?.isDownloading = false
+          model?.reset()
         }
       }
 
       do {
-        let fileURL = try await downloader.download(
+        let (progressStream, fileURL) = try await downloader.download(
           asset: asset,
-          to: destinationURL.deletingLastPathComponent(),
-          onProgress: { [weak self] progress in
-            Task { @MainActor [weak self] in
-              guard let self else { return }
-              self.downloadProgress = progress.fractionCompleted
-              model?.updateProgress(
-                fileName: asset.name,
-                progress: progress.fractionCompleted,
-                downloadedBytes: Measurement(value: Double(progress.bytesWritten), unit: .bytes),
-                totalBytes: Measurement(value: Double(progress.totalBytes), unit: .bytes),
-                timeRemaining: progress.estimatedTimeRemaining,
-                onCancel: { [weak self] in
-                  Task {
-                    await self?.downloader.cancelDownload()
-                    await MainActor.run {
-                      self?.isDownloading = false
-                      model?.reset()
-                    }
-                  }
-                }
-              )
-            }
-          }
+          to: destinationURL.deletingLastPathComponent()
         )
+
+        for try await progress in progressStream {
+          downloadProgress = progress.fractionCompleted
+          model?.updateProgress(
+            fileName: asset.name,
+            progress: progress.fractionCompleted,
+            downloadedBytes: Measurement(value: Double(progress.bytesWritten), unit: .bytes),
+            totalBytes: Measurement(value: Double(progress.totalBytes), unit: .bytes),
+            timeRemaining: progress.estimatedTimeRemaining,
+            onCancel: { [weak self] in
+              Task { @MainActor in
+                await self?.downloader.cancelDownload()
+                self?.isDownloading = false
+                model?.reset()
+              }
+            }
+          )
+        }
 
         isDownloading = false
         downloadProgress = 1.0
@@ -419,6 +413,9 @@ public final class GitHubUpdateChecker {
             "fileURL": "\(fileURL.path(percentEncoded: false))"
           ]
         )
+      } catch is CancellationError {
+        isDownloading = false
+        model?.reset()
       } catch {
         isDownloading = false
 
@@ -477,39 +474,33 @@ public final class GitHubUpdateChecker {
 
       // Start installation progress UI if available
       model?.startInstallation { [weak self] in
-        Task {
+        Task { @MainActor in
           await self?.installer.cancelInstallation()
-          await MainActor.run {
-            self?.isInstalling = false
-            model?.reset()
-          }
+          self?.isInstalling = false
+          model?.reset()
         }
       }
 
       do {
-        let installedURL = try await installer.install(
+        let (progressStream, installedURL) = try await installer.install(
           from: fileURL,
-          to: targetAppURL,
-          onProgress: { [weak self] progress in
-            Task { @MainActor [weak self] in
-              guard let self else { return }
-              self.installationPhase = progress.phase.displayName
-              model?.updateInstallProgress(
-                phase: progress.phase,
-                message: progress.message,
-                onCancel: { [weak self] in
-                  Task {
-                    await self?.installer.cancelInstallation()
-                    await MainActor.run {
-                      self?.isInstalling = false
-                      model?.reset()
-                    }
-                  }
-                }
-              )
-            }
-          }
+          to: targetAppURL
         )
+
+        for try await progress in progressStream {
+          installationPhase = progress.phase.displayName
+          model?.updateInstallProgress(
+            phase: progress.phase,
+            message: progress.message,
+            onCancel: { [weak self] in
+              Task { @MainActor in
+                await self?.installer.cancelInstallation()
+                self?.isInstalling = false
+                model?.reset()
+              }
+            }
+          )
+        }
 
         isInstalling = false
         installedAppURL = installedURL
@@ -522,6 +513,10 @@ public final class GitHubUpdateChecker {
 
         // Show restart prompt in built-in UI if available
         model?.completeInstallation(appURL: installedURL)
+      } catch is CancellationError {
+        isInstalling = false
+        logger.info("Installation cancelled by user")
+        model?.reset()
       } catch {
         isInstalling = false
 

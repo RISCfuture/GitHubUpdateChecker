@@ -84,19 +84,17 @@
       let configuration = NSWorkspace.OpenConfiguration()
       configuration.activates = true
 
-      NSWorkspace.shared.openApplication(
-        at: url,
-        configuration: configuration
-      ) { _, error in
-        if let error {
+      Task {
+        do {
+          _ = try await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
+          appRelaunchLogger.info("App opened successfully")
+        } catch {
           appRelaunchLogger.error(
             "Failed to open app",
             metadata: [
               "error": "\(error.localizedDescription)"
             ]
           )
-        } else {
-          appRelaunchLogger.info("App opened successfully")
         }
       }
     }

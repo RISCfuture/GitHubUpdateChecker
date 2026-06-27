@@ -15,7 +15,7 @@
     ///   - directory: The directory to extract to (defaults to a temp directory)
     /// - Returns: The URL of the extracted .app bundle
     /// - Throws: `ArchiveError.extractionFailed` or `ArchiveError.appNotFound`
-    public func extract(zipURL: URL, to directory: URL? = nil) throws -> URL {
+    public func extract(zipURL: URL, to directory: URL? = nil) async throws -> URL {
       logger.info("Extracting ZIP", metadata: ["path": "\(zipURL.path)"])
 
       // Create extraction directory
@@ -50,7 +50,7 @@
       process.standardError = errorPipe
 
       do {
-        try process.run()
+        try await process.runUntilExit()
       } catch {
         // Clean up on failure
         try? FileManager.default.removeItem(at: extractionDir)
@@ -58,8 +58,6 @@
           "Failed to run ditto: \(error.localizedDescription)"
         )
       }
-
-      process.waitUntilExit()
 
       guard process.terminationStatus == 0 else {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()

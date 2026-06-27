@@ -13,7 +13,7 @@
     /// - Parameter dmgURL: The URL of the DMG file to mount
     /// - Returns: The URL of the mount point
     /// - Throws: `DiskImageError.mountFailed` if mounting fails
-    public func mount(dmgURL: URL) throws -> URL {
+    public func mount(dmgURL: URL) async throws -> URL {
       logger.info("Mounting DMG", metadata: ["path": "\(dmgURL.path)"])
 
       let process = Process()
@@ -32,12 +32,10 @@
       process.standardError = errorPipe
 
       do {
-        try process.run()
+        try await process.runUntilExit()
       } catch {
         throw DiskImageError.mountFailed("Failed to run hdiutil: \(error.localizedDescription)")
       }
-
-      process.waitUntilExit()
 
       guard process.terminationStatus == 0 else {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
@@ -134,7 +132,7 @@
     /// Unmount a DMG
     /// - Parameter mountPoint: The URL of the mount point to unmount
     /// - Throws: `DiskImageError.unmountFailed` if unmounting fails (usually non-fatal)
-    public func unmount(mountPoint: URL) throws {
+    public func unmount(mountPoint: URL) async throws {
       logger.info("Unmounting DMG", metadata: ["mountPoint": "\(mountPoint.path)"])
 
       let process = Process()
@@ -145,7 +143,7 @@
       process.standardError = errorPipe
 
       do {
-        try process.run()
+        try await process.runUntilExit()
       } catch {
         logger.warning(
           "Failed to run hdiutil detach",
@@ -155,8 +153,6 @@
         )
         throw DiskImageError.unmountFailed(error.localizedDescription)
       }
-
-      process.waitUntilExit()
 
       if process.terminationStatus != 0 {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()

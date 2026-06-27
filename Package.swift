@@ -34,14 +34,18 @@ let package = Package(
         .process("Resources")
       ],
       swiftSettings: [
-        .swiftLanguageMode(.v6)
+        .swiftLanguageMode(.v6),
+        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+        .enableUpcomingFeature("InferIsolatedConformances")
       ]
     ),
     .testTarget(
       name: "GitHubUpdateCheckerTests",
       dependencies: ["GitHubUpdateChecker"],
       swiftSettings: [
-        .swiftLanguageMode(.v6)
+        .swiftLanguageMode(.v6),
+        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+        .enableUpcomingFeature("InferIsolatedConformances")
       ]
     )
   ]

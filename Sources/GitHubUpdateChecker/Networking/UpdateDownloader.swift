@@ -36,7 +36,10 @@ public actor UpdateDownloader {
   // MARK: - Properties
 
   private var activeDownload:
-    (task: URLSessionDownloadTask, continuation: AsyncStream<DownloadProgress>.Continuation)?
+    (
+      task: Task<Void, Never>,
+      continuation: AsyncThrowingStream<DownloadProgress, Error>.Continuation
+    )?
   private let session: URLSession
   private let logger = Logger(label: "codes.tim.GitHubUpdateChecker.Downloader")
 
@@ -51,14 +54,18 @@ public actor UpdateDownloader {
   // MARK: - Public Methods
 
   /// Download an asset to the specified directory
+  ///
+  /// The returned stream yields live progress as the download proceeds and finishes once the file
+  /// is written to `fileURL`. If the download fails or is cancelled, the stream finishes by
+  /// throwing the underlying error (or a `CancellationError`).
   /// - Parameters:
   ///   - asset: The asset to download
   ///   - directory: The directory to save the file (defaults to ~/Downloads)
-  /// - Returns: An async stream of download progress and the final file URL
+  /// - Returns: An async throwing stream of download progress and the destination file URL
   public func download(
     asset: GitHubAsset,
     to directory: URL? = nil
-  ) async throws -> (progress: AsyncStream<DownloadProgress>, fileURL: URL) {
+  ) throws -> (progress: AsyncThrowingStream<DownloadProgress, Error>, fileURL: URL) {
     // Cancel any existing download
     cancelDownload()
 
@@ -84,65 +91,25 @@ public actor UpdateDownloader {
     // Remove existing file if present
     try? FileManager.default.removeItem(at: destinationURL)
 
-    let (stream, continuation) = AsyncStream<DownloadProgress>.makeStream()
+    let (stream, continuation) = AsyncThrowingStream<DownloadProgress, Error>.makeStream()
 
     let downloadTask = Task { [weak self] in
-      defer { continuation.finish() }
-      try await self?.performDownload(
-        from: asset.browserDownloadURL,
-        to: destinationURL,
-        expectedSize: Int64(asset.size),
-        onProgress: { continuation.yield($0) }
-      )
+      do {
+        try await self?.performDownload(
+          from: asset.browserDownloadURL,
+          to: destinationURL,
+          expectedSize: Int64(asset.size),
+          onProgress: { continuation.yield($0) }
+        )
+        continuation.finish()
+      } catch {
+        continuation.finish(throwing: error)
+      }
     }
 
-    // Wait for download to complete
-    try await downloadTask.value
+    activeDownload = (task: downloadTask, continuation: continuation)
 
     return (stream, destinationURL)
-  }
-
-  /// Download with a progress callback (convenience method)
-  /// - Parameters:
-  ///   - asset: The asset to download
-  ///   - directory: The directory to save the file
-  ///   - onProgress: Called with progress updates
-  /// - Returns: The URL of the downloaded file
-  public func download(
-    asset: GitHubAsset,
-    to directory: URL? = nil,
-    onProgress: @escaping @Sendable (DownloadProgress) -> Void
-  ) async throws -> URL {
-    let targetDirectory =
-      directory ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
-
-    // Ensure the directory exists (important for sandboxed apps)
-    if !FileManager.default.fileExists(atPath: targetDirectory.path(percentEncoded: false)) {
-      try FileManager.default.createDirectory(
-        at: targetDirectory,
-        withIntermediateDirectories: true
-      )
-      logger.debug(
-        "Created downloads directory",
-        metadata: [
-          "path": "\(targetDirectory.path(percentEncoded: false))"
-        ]
-      )
-    }
-
-    let destinationURL = targetDirectory.appendingPathComponent(asset.name)
-
-    // Remove existing file if present
-    try? FileManager.default.removeItem(at: destinationURL)
-
-    try await performDownload(
-      from: asset.browserDownloadURL,
-      to: destinationURL,
-      expectedSize: Int64(asset.size),
-      onProgress: onProgress
-    )
-
-    return destinationURL
   }
 
   /// Cancel the current download
@@ -151,7 +118,7 @@ public actor UpdateDownloader {
       logger.info("Cancelling download")
     }
     activeDownload?.task.cancel()
-    activeDownload?.continuation.finish()
+    activeDownload?.continuation.finish(throwing: CancellationError())
     activeDownload = nil
   }
 

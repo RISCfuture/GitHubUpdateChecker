@@ -26,7 +26,7 @@
     private let zipHandler = ZIPHandler()
 
     /// The current installation task, if any
-    private var currentTask: Task<URL, Error>?
+    private var currentTask: Task<Void, Never>?
 
     // MARK: - Initialization
 
@@ -36,18 +36,20 @@
     // MARK: - Public API
 
     /// Install an update from a downloaded file
+    ///
+    /// The returned stream yields each installation phase and finishes once the app is installed at
+    /// `installedURL`. If installation fails or is cancelled, the stream finishes by throwing the
+    /// underlying error (`GeneralInstallationError`, `DiskImageError`, `ArchiveError`,
+    /// `FileCopyError`, `AuthorizationError`, `VerificationError`, or a `CancellationError`).
     /// - Parameters:
     ///   - fileURL: The downloaded DMG or ZIP file
     ///   - targetAppURL: Where to install (defaults to current app location)
-    ///   - onProgress: Progress callback
-    /// - Returns: The installed app URL
-    /// - Throws: `GeneralInstallationError`, `DiskImageError`, `ArchiveError`, `FileCopyError`,
-    ///           `AuthorizationError`, or `VerificationError` if installation fails
+    /// - Returns: An async throwing stream of installation progress and the installed app URL
+    /// - Throws: `GeneralInstallationError.unsupportedFileType` if the file cannot be auto-installed
     public func install(
       from fileURL: URL,
-      to targetAppURL: URL? = nil,
-      onProgress: @escaping @Sendable (InstallProgress) -> Void
-    ) async throws -> URL {
+      to targetAppURL: URL? = nil
+    ) throws -> (progress: AsyncThrowingStream<InstallProgress, Error>, installedURL: URL) {
       // Detect file type
       guard let installableType = detectType(from: fileURL) else {
         throw GeneralInstallationError.unsupportedFileType(fileURL.pathExtension)
@@ -69,13 +71,61 @@
         ]
       )
 
+      let (stream, continuation) = AsyncThrowingStream<InstallProgress, Error>.makeStream()
+
+      let installTask = Task { [weak self] in
+        guard let self else {
+          continuation.finish()
+          return
+        }
+        do {
+          try await self.performInstall(
+            from: fileURL,
+            type: installableType,
+            to: destination,
+            onProgress: { continuation.yield($0) }
+          )
+          continuation.finish()
+        } catch {
+          continuation.finish(throwing: error)
+        }
+      }
+
+      currentTask = installTask
+
+      return (stream, destination)
+    }
+
+    /// Cancel any ongoing installation
+    public func cancelInstallation() {
+      currentTask?.cancel()
+      currentTask = nil
+      logger.info("Installation cancelled")
+    }
+
+    /// Detect the installable type from a file URL
+    /// - Parameter url: The file URL to check
+    /// - Returns: The installable type, or nil if not supported
+    public func detectType(from url: URL) -> InstallableType? {
+      let ext = url.pathExtension.lowercased()
+      return [InstallableType.dmg, .zip, .pkg].first { $0.fileExtensions.contains(ext) }
+    }
+
+    // MARK: - Private Methods
+
+    private func performInstall(
+      from fileURL: URL,
+      type: InstallableType,
+      to destination: URL,
+      onProgress: @escaping @Sendable (InstallProgress) -> Void
+    ) async throws {
       // Report preparing
       onProgress(InstallProgress(phase: .preparing, message: "Preparing installation..."))
 
       // Extract/mount and get the .app URL
       let (appURL, cleanup) = try await extractApp(
         from: fileURL,
-        type: installableType,
+        type: type,
         onProgress: onProgress
       )
 
@@ -106,26 +156,7 @@
           "installedApp": "\(installedURL.path)"
         ]
       )
-
-      return installedURL
     }
-
-    /// Cancel any ongoing installation
-    public func cancelInstallation() {
-      currentTask?.cancel()
-      currentTask = nil
-      logger.info("Installation cancelled")
-    }
-
-    /// Detect the installable type from a file URL
-    /// - Parameter url: The file URL to check
-    /// - Returns: The installable type, or nil if not supported
-    public func detectType(from url: URL) -> InstallableType? {
-      let ext = url.pathExtension.lowercased()
-      return [InstallableType.dmg, .zip, .pkg].first { $0.fileExtensions.contains(ext) }
-    }
-
-    // MARK: - Private Methods
 
     /// Extract an app from a DMG or ZIP file
     /// - Returns: A tuple of (app URL, cleanup closure)
@@ -207,7 +238,7 @@
       }
 
       // Remove quarantine attribute from the installed app
-      removeQuarantineAttribute(from: destination)
+      await removeQuarantineAttribute(from: destination)
 
       return destination
     }
@@ -245,14 +276,13 @@
     }
 
     /// Remove the quarantine extended attribute from a file
-    private func removeQuarantineAttribute(from url: URL) {
+    private func removeQuarantineAttribute(from url: URL) async {
       let process = Process()
       process.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
       process.arguments = ["-rd", "com.apple.quarantine", url.path]
 
       do {
-        try process.run()
-        process.waitUntilExit()
+        try await process.runUntilExit()
         logger.debug("Removed quarantine attribute from app")
       } catch {
         // Non-fatal, just log
