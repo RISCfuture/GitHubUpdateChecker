@@ -2,7 +2,7 @@
 
 [![Build and Test](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml/badge.svg)](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml)
 [![Documentation](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/documentation.yml/badge.svg)](https://riscfuture.github.io/GitHubUpdateChecker/)
-[![Swift 6.0+](https://img.shields.io/badge/Swift-6.0+-orange.svg)](https://swift.org)
+[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-orange.svg)](https://swift.org)
 [![macOS 14+](https://img.shields.io/badge/macOS-14+-blue.svg)](https://developer.apple.com/macos/)
 
 A lightweight Swift library for checking app updates via GitHub's Releases API.
@@ -21,7 +21,7 @@ GitHub-hosted releases.
 ## Requirements
 
 - macOS 14.0+
-- Swift 6.0+
+- Swift 6.2+
 
 ## Installation
 
@@ -181,23 +181,6 @@ Run tests with Swift Package Manager:
 ```sh
 swift test
 ```
-
-## Known Issues
-
-### Swift 6.1 Compatibility
-
-This library does not compile with Swift 6.1. Swift 6.0 and 6.2+ are fully
-supported.
-
-The issue is in a transitive dependency: `NetworkImage` (via `swift-markdown-ui`)
-includes a `Package@swift-6.0.swift` manifest that opts into Swift 6 language
-mode, but contains code that fails Swift 6.1's stricter concurrency checking
-around `@StateObject` initialization. Apple relaxed these rules in Swift 6.2.
-
-**Workarounds:**
-
-- Use Swift 6.0 or Swift 6.2+
-- Wait for upstream fix in the [NetworkImage](https://github.com/gonzalezreal/NetworkImage) library
 
 ## License
 
