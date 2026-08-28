@@ -43,7 +43,7 @@
       HStack(alignment: .center) {
         Image(nsImage: appIcon)
           .resizable()
-          .aspectRatio(contentMode: .fit)
+          .scaledToFit()
           .frame(width: 64, height: 64)
           .accessibilityHidden(true)
 
