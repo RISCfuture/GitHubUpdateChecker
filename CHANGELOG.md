@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.0.1] - 2026-08-28
+
+### Fixed
+
+- Apps installed by a `.pkg` installer can now be updated in place.
+  `PrivilegeEscalation.requiresElevation(for:)` only inspected the directory
+  enclosing the destination, so a `root:wheel` bundle sitting in a
+  group-writable `/Applications` looked replaceable without authorization and
+  the install failed while deleting the old bundle. It now also checks the item
+  being replaced, so these installs take the administrator-authorized path.
+
 ## [2.0.0] - 2026-06-26
 
 ### Changed
