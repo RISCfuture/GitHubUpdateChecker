@@ -8,12 +8,37 @@
   public enum PrivilegeEscalation {
     private static let logger = Logger(label: "codes.tim.GitHubUpdateChecker.PrivilegeEscalation")
 
-    /// Check if a location requires elevated privileges to write to
-    /// - Parameter url: The destination URL to check
-    /// - Returns: true if the current user cannot write to the location
+    /**
+     Check if a location requires elevated privileges to write to.
+
+     Installing over an app replaces whatever is already at the destination, which needs write
+     access both to the enclosing directory, to swap the entry itself, and to the item being
+     replaced, to delete the tree underneath it. An app placed by a `.pkg` installer is the case
+     that makes the second check matter: the installer leaves the bundle owned by `root:wheel` and
+     mode `755` inside an `/Applications` that stays group-writable by `admin`, so the enclosing
+     directory alone reports the location as writable while unlinking anything inside the bundle
+     fails.
+
+     The existing item is probed at its root rather than at a path within it, such as `Contents`,
+     because `isWritableFile(atPath:)` on a directory reports whether entries can be created and
+     removed inside it: a recursive delete cannot reach `Contents` at all without permission to
+     write to the bundle root that holds it.
+
+     - Parameter url: The destination URL to check
+     - Returns: true if the current user cannot replace the item at the location
+     */
     public static func requiresElevation(for url: URL) -> Bool {
-      let directory = url.deletingLastPathComponent()
-      return !FileManager.default.isWritableFile(atPath: directory.path)
+      !canSwapEntry(at: url) || !canDeleteExistingItem(at: url)
+    }
+
+    private static func canSwapEntry(at url: URL) -> Bool {
+      FileManager.default.isWritableFile(atPath: url.deletingLastPathComponent().path)
+    }
+
+    private static func canDeleteExistingItem(at url: URL) -> Bool {
+      let fileManager = FileManager.default
+      guard fileManager.fileExists(atPath: url.path) else { return true }
+      return fileManager.isWritableFile(atPath: url.path)
     }
 
     /// Copy a file using elevated privileges via AppleScript
