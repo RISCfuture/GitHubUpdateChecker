@@ -39,7 +39,7 @@
       // This allows the current app to fully quit before relaunching
       let script = """
         sleep \(afterDelay)
-        open "\(targetURL.path.escapedForShell)"
+        open \(targetURL.path.shellQuoted)
         """
 
       let process = Process()

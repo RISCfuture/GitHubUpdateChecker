@@ -547,8 +547,7 @@ public final class GitHubUpdateChecker {
   /// - Parameter fileURL: The downloaded file URL
   /// - Returns: true if the file type supports auto-installation
   public func canAutoInstall(fileURL: URL) -> Bool {
-    let ext = fileURL.pathExtension.lowercased()
-    return AppInstaller.supportsAutoInstall && (ext == "dmg" || ext == "zip")
+    AppInstaller.canAutoInstall(fileURL: fileURL)
   }
 
   /// Relaunch the application after an update

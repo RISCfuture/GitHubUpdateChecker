@@ -368,11 +368,22 @@
     /// Whether this type supports automatic installation
     public var supportsAutoInstall: Bool {
       switch self {
-        case .dmg, .zip:
+        case .dmg, .zip, .pkg:
           return true
-        case .pkg:
-          return false  // PKG requires Installer.app or command-line installer
       }
+    }
+
+    /// The type a file's extension identifies, or `nil` if it names none of them.
+    /// - Parameter fileURL: The file to identify
+    public init?(fileURL: URL) {
+      let fileExtension = fileURL.pathExtension.lowercased()
+      guard
+        let type = [Self.dmg, .zip, .pkg].first(where: {
+          $0.fileExtensions.contains(fileExtension)
+        })
+      else { return nil }
+
+      self = type
     }
   }
 #endif

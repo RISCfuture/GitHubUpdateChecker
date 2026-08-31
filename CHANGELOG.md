@@ -1,5 +1,31 @@
 # Change Log
 
+## [2.1.0] - 2026-08-30
+
+### Added
+
+- `.pkg` assets are now installed automatically. `AppInstaller` hands a package
+  to `installer(8)` through the same administrator prompt the privileged copy
+  already used, instead of extracting a bundle and copying it into place — a
+  package chooses its own destination, so the install is verified afterwards
+  rather than aimed beforehand. `InstallableType.pkg.supportsAutoInstall` is
+  now `true`, and a project shipping an installer package no longer has to
+  publish a disk image beside it purely to give the updater something it knows
+  how to install.
+- `AppInstaller.canAutoInstall(fileURL:)`, which answers whether a downloaded
+  file can be installed without the user doing it by hand. It replaces the
+  extension checks that `GitHubUpdateChecker.canAutoInstall(fileURL:)` and the
+  update alert each kept a copy of.
+- `InstallableType.init?(fileURL:)`, which identifies a file's installable type.
+
+### Fixed
+
+- A path containing a double quote or a backslash no longer breaks the
+  privileged copy. The shell command is now escaped for the AppleScript string
+  literal that carries it, a layer the shell quoting knew nothing about.
+- A path containing an apostrophe no longer breaks the relaunch, which escaped
+  the path for single quotes and then wrapped it in double ones.
+
 ## [2.0.1] - 2026-08-28
 
 ### Fixed

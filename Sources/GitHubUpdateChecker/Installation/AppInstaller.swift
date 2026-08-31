@@ -35,6 +35,16 @@
 
     // MARK: - Public API
 
+    /// Whether a downloaded file is one this build can install without the user doing it by hand.
+    ///
+    /// Both the file and the running app have a say: a sandboxed app can install nothing at all,
+    /// whatever it downloaded.
+    /// - Parameter fileURL: The downloaded file
+    /// - Returns: true if `install(from:to:)` can take this file
+    public static func canAutoInstall(fileURL: URL) -> Bool {
+      supportsAutoInstall && InstallableType(fileURL: fileURL)?.supportsAutoInstall == true
+    }
+
     /// Install an update from a downloaded file
     ///
     /// The returned stream yields each installation phase and finishes once the app is installed at
@@ -42,8 +52,10 @@
     /// underlying error (`GeneralInstallationError`, `DiskImageError`, `ArchiveError`,
     /// `FileCopyError`, `AuthorizationError`, `VerificationError`, or a `CancellationError`).
     /// - Parameters:
-    ///   - fileURL: The downloaded DMG or ZIP file
-    ///   - targetAppURL: Where to install (defaults to current app location)
+    ///   - fileURL: The downloaded DMG, ZIP, or PKG file
+    ///   - targetAppURL: Where the app is expected to end up (defaults to the current app
+    ///     location). A disk image or archive is copied there; a package chooses its own
+    ///     destination, so for one this is only where the result is checked for.
     /// - Returns: An async throwing stream of installation progress and the installed app URL
     /// - Throws: `GeneralInstallationError.unsupportedFileType` if the file cannot be auto-installed
     public func install(
@@ -107,8 +119,7 @@
     /// - Parameter url: The file URL to check
     /// - Returns: The installable type, or nil if not supported
     public func detectType(from url: URL) -> InstallableType? {
-      let ext = url.pathExtension.lowercased()
-      return [InstallableType.dmg, .zip, .pkg].first { $0.fileExtensions.contains(ext) }
+      InstallableType(fileURL: url)
     }
 
     // MARK: - Private Methods
@@ -122,7 +133,44 @@
       // Report preparing
       onProgress(InstallProgress(phase: .preparing, message: "Preparing installation..."))
 
-      // Extract/mount and get the .app URL
+      switch type {
+        case .dmg, .zip:
+          try await installBundle(
+            from: fileURL,
+            type: type,
+            to: destination,
+            onProgress: onProgress
+          )
+        case .pkg:
+          try await installPackage(at: fileURL, onProgress: onProgress)
+      }
+
+      // Verify installation. A package picked its own destination, so this is the step that
+      // establishes the app really is where the relaunch is about to look for it.
+      onProgress(InstallProgress(phase: .verifying, message: "Verifying installation..."))
+      try verifyInstallation(at: destination)
+
+      // Cleanup phase
+      onProgress(InstallProgress(phase: .cleaning, message: "Cleaning up..."))
+
+      // Complete
+      onProgress(InstallProgress(phase: .complete, message: "Installation complete"))
+
+      logger.info(
+        "Installation completed successfully",
+        metadata: [
+          "installedApp": "\(destination.path)"
+        ]
+      )
+    }
+
+    /// Installs from a disk image or archive, each of which holds an app bundle to be put in place.
+    private func installBundle(
+      from fileURL: URL,
+      type: InstallableType,
+      to destination: URL,
+      onProgress: @escaping @Sendable (InstallProgress) -> Void
+    ) async throws {
       let (appURL, cleanup) = try await extractApp(
         from: fileURL,
         type: type,
@@ -136,26 +184,20 @@
         }
       }
 
-      // Copy to destination
       onProgress(InstallProgress(phase: .copying, message: "Installing update..."))
-      let installedURL = try await copyApp(from: appURL, to: destination)
+      try await copyApp(from: appURL, to: destination)
+    }
 
-      // Verify installation
-      onProgress(InstallProgress(phase: .verifying, message: "Verifying installation..."))
-      try verifyInstallation(at: installedURL)
-
-      // Cleanup phase
-      onProgress(InstallProgress(phase: .cleaning, message: "Cleaning up..."))
-
-      // Complete
-      onProgress(InstallProgress(phase: .complete, message: "Installation complete"))
-
-      logger.info(
-        "Installation completed successfully",
-        metadata: [
-          "installedApp": "\(installedURL.path)"
-        ]
-      )
+    /// Installs from a package, which installs itself.
+    ///
+    /// There is nothing to extract and nothing to copy: `installer` lays the payload down at the
+    /// location the package names, which is why no destination is passed in here.
+    private func installPackage(
+      at fileURL: URL,
+      onProgress: @escaping @Sendable (InstallProgress) -> Void
+    ) async throws {
+      onProgress(InstallProgress(phase: .copying, message: "Running the installer..."))
+      try await PrivilegeEscalation.installPackage(at: fileURL)
     }
 
     /// Extract an app from a DMG or ZIP file
@@ -196,12 +238,13 @@
           return (appURL, cleanup)
 
         case .pkg:
+          // Unreachable: a package installs itself, so `performInstall` never routes one here.
           throw GeneralInstallationError.unsupportedFileType("pkg")
       }
     }
 
     /// Copy an app to the destination, handling privilege escalation if needed
-    private func copyApp(from source: URL, to destination: URL) async throws -> URL {
+    private func copyApp(from source: URL, to destination: URL) async throws {
       let fileManager = FileManager.default
 
       logger.debug(
@@ -239,8 +282,6 @@
 
       // Remove quarantine attribute from the installed app
       await removeQuarantineAttribute(from: destination)
-
-      return destination
     }
 
     /// Verify that the installed app is valid
