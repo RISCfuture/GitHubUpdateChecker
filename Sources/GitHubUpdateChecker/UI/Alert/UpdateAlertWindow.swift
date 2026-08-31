@@ -227,8 +227,7 @@
     }
 
     private func canAutoInstall(fileURL: URL) -> Bool {
-      let ext = fileURL.pathExtension.lowercased()
-      return AppInstaller.supportsAutoInstall && (ext == "dmg" || ext == "zip")
+      AppInstaller.canAutoInstall(fileURL: fileURL)
     }
 
     private func replaceWindowContent(with view: AnyView, title: String, closable: Bool) {

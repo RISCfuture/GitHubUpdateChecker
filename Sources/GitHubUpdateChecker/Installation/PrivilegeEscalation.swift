@@ -58,12 +58,45 @@
         ]
       )
 
-      // Use AppleScript to run with administrator privileges
-      // This will prompt for password via the standard macOS dialog
+      let destinationPath = destination.path.shellQuoted
+      try runWithAdministratorPrivileges(
+        "rm -rf \(destinationPath) && cp -R \(source.path.shellQuoted) \(destinationPath)"
+      )
+
+      logger.info("Elevated copy completed successfully")
+    }
+
+    /**
+     Install a package with `installer(8)`.
+
+     Unlike a copy, this always needs the password: `installer` writes as root whatever the
+     package's own permissions on the destination happen to be, and refuses to run otherwise.
+
+     The target is the boot volume rather than a directory. `installer` takes a volume and leaves
+     the destination within it to the package, so where the bundle lands is the package's decision
+     and not this call's — which is why the caller verifies the result rather than assuming it.
+
+     - Parameter packageURL: The package file to install
+     - Throws: `AuthorizationError` if the install fails or the password dialog is dismissed
+     */
+    @MainActor
+    public static func installPackage(at packageURL: URL) throws {
+      logger.info(
+        "Requesting elevated privileges for package install",
+        metadata: ["package": "\(packageURL.path)"]
+      )
+
+      try runWithAdministratorPrivileges("installer -pkg \(packageURL.path.shellQuoted) -target /")
+
+      logger.info("Package install completed successfully")
+    }
+
+    /// Runs a shell command as an administrator, prompting for a password through the standard
+    /// macOS dialog. AppleScript requires the main thread.
+    @MainActor
+    private static func runWithAdministratorPrivileges(_ command: String) throws {
       let script = """
-        do shell script "rm -rf '\(destination.path.escapedForShell)' && cp -R \
-        '\(source.path.escapedForShell)' '\(destination.path.escapedForShell)'" with administrator \
-        privileges
+        do shell script "\(command.escapedForAppleScriptLiteral)" with administrator privileges
         """
 
       // swiftlint:disable:next legacy_objc_type
@@ -72,31 +105,28 @@
         throw AuthorizationError.failed("Failed to create AppleScript")
       }
 
-      // Run on main thread (required for AppleScript)
       _ = appleScript.executeAndReturnError(&error)
 
-      if let error {
-        let errorMessage =
-          error[NSAppleScript.errorMessage] as? String ?? "Unknown authorization error"
-        let errorNumber = error[NSAppleScript.errorNumber] as? Int ?? 0
+      guard let error else { return }
 
-        logger.error(
-          "AppleScript failed",
-          metadata: [
-            "error": "\(errorMessage)",
-            "errorNumber": "\(errorNumber)"
-          ]
-        )
+      let errorMessage =
+        error[NSAppleScript.errorMessage] as? String ?? "Unknown authorization error"
+      let errorNumber = error[NSAppleScript.errorNumber] as? Int ?? 0
 
-        // Error -128 is user cancelled
-        if errorNumber == -128 {
-          throw AuthorizationError.denied
-        }
+      logger.error(
+        "AppleScript failed",
+        metadata: [
+          "error": "\(errorMessage)",
+          "errorNumber": "\(errorNumber)"
+        ]
+      )
 
-        throw AuthorizationError.failed(errorMessage)
+      // Error -128 is user cancelled
+      if errorNumber == -128 {
+        throw AuthorizationError.denied
       }
 
-      logger.info("Elevated copy completed successfully")
+      throw AuthorizationError.failed(errorMessage)
     }
 
     /// Request authorization using the Security framework
@@ -130,13 +160,24 @@
     }
   }
 
-  // MARK: - String Extension for Shell Escaping
+  // MARK: - Quoting
 
   extension String {
-    /// Escape a string for use in a shell command
-    var escapedForShell: String {
-      // Replace single quotes with escaped version
-      self.replacingOccurrences(of: "'", with: "'\\''")
+    /// The string as one shell word, safe to interpolate into a command.
+    ///
+    /// Single quotes protect everything a path may contain except a single quote itself, which
+    /// closes the quoting and is spliced back in escaped.
+    var shellQuoted: String {
+      "'\(replacingOccurrences(of: "'", with: "'\\''"))'"
+    }
+
+    /// The string escaped for embedding in an AppleScript double-quoted literal.
+    ///
+    /// Backslashes are escaped first, so that the pass over the double quotes cannot escape the
+    /// backslashes this step introduces.
+    var escapedForAppleScriptLiteral: String {
+      replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "\"", with: "\\\"")
     }
   }
 #endif
