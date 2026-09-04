@@ -1,5 +1,5 @@
 #if os(macOS)
-  import AppKit
+  public import AppKit
   import SwiftUI
 
   /// Manages the update alert window presentation

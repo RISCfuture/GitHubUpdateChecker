@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 import Logging
 
 /// Client for interacting with the GitHub Releases API

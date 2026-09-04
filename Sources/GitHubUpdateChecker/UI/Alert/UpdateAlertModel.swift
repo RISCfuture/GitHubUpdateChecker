@@ -1,5 +1,5 @@
 #if os(macOS)
-  import AppKit
+  public import AppKit
   import Foundation
 
   /// Observable model for the update alert view

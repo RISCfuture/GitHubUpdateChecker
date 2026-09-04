@@ -1,5 +1,5 @@
 #if os(macOS)
-  import Foundation
+  public import Foundation
 
   // MARK: - Base Protocol
 

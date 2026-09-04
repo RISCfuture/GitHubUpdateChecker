@@ -1,5 +1,5 @@
 #if os(macOS)
-  import Foundation
+  public import Foundation
   import Logging
 
   /// Handles extracting .app bundles from ZIP files

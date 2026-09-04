@@ -141,7 +141,7 @@ extension SemanticVersion: LosslessStringConvertible {}
 // MARK: - Codable
 
 extension SemanticVersion: Codable {
-  public init(from decoder: Decoder) throws {
+  public init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     let string = try container.decode(String.self)
     guard let version = SemanticVersion(string) else {
@@ -153,7 +153,7 @@ extension SemanticVersion: Codable {
     self = version
   }
 
-  public func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(description)
   }

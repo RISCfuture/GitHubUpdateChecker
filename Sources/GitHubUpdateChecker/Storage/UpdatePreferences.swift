@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// Keys used for storing preferences in UserDefaults
 private enum UserDefaultsKeys {

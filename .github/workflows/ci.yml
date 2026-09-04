@@ -33,6 +33,8 @@ jobs:
             swift: "6.2"
           - os: macos-26
             swift: "6.2"
+          - os: macos-26
+            swift: "6.3"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6

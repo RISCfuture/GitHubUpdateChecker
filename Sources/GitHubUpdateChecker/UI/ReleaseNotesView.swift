@@ -6,7 +6,7 @@
 //
 
 import MarkdownUI
-import SwiftUI
+public import SwiftUI
 
 /// A SwiftUI view that displays release notes with Markdown rendering.
 ///

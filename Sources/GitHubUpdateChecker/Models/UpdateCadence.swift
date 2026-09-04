@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// Defines how frequently the app should check for updates.
 ///
