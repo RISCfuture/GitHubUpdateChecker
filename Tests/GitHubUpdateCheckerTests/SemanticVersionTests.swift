@@ -3,10 +3,10 @@ import Testing
 
 @testable import GitHubUpdateChecker
 
-@Suite("SemanticVersion")
-struct SemanticVersionTests {
-  @Test("Parse standard versions")
-  func parseStandardVersions() {
+@Suite
+struct `SemanticVersion tests` {
+  @Test
+  func `Parse standard versions`() {
     let v1 = SemanticVersion("1.0.0")
     #expect(v1?.major == 1)
     #expect(v1?.minor == 0)
@@ -18,8 +18,8 @@ struct SemanticVersionTests {
     #expect(v2?.patch == 3)
   }
 
-  @Test("Parse versions with v prefix")
-  func parseVPrefix() {
+  @Test
+  func `Parse versions with v prefix`() {
     let v1 = SemanticVersion("v1.0.0")
     #expect(v1?.major == 1)
     #expect(v1?.minor == 0)
@@ -29,16 +29,16 @@ struct SemanticVersionTests {
     #expect(v2?.major == 2)
   }
 
-  @Test("Parse versions with 'version' prefix")
-  func parseVersionPrefix() {
+  @Test
+  func `Parse versions with 'version' prefix`() {
     let v = SemanticVersion("version 1.0.0")
     #expect(v?.major == 1)
     #expect(v?.minor == 0)
     #expect(v?.patch == 0)
   }
 
-  @Test("Parse partial versions")
-  func parsePartialVersions() {
+  @Test
+  func `Parse partial versions`() {
     let v1 = SemanticVersion("1.0")
     #expect(v1?.major == 1)
     #expect(v1?.minor == 0)
@@ -50,8 +50,8 @@ struct SemanticVersionTests {
     #expect(v2?.patch == 0)
   }
 
-  @Test("Parse prerelease versions")
-  func parsePrereleaseVersions() {
+  @Test
+  func `Parse prerelease versions`() {
     let v1 = SemanticVersion("1.0.0-beta")
     #expect(v1?.major == 1)
     #expect(v1?.prerelease == "beta")
@@ -61,8 +61,8 @@ struct SemanticVersionTests {
     #expect(v2?.prerelease == "rc.1")
   }
 
-  @Test("Compare versions with Comparable")
-  func compareVersions() {
+  @Test
+  func `Compare versions with Comparable`() {
     let v1 = SemanticVersion("1.0.0")!
     let v2 = SemanticVersion("2.0.0")!
     let v3 = SemanticVersion("1.1.0")!
@@ -75,8 +75,8 @@ struct SemanticVersionTests {
     #expect(v1 == SemanticVersion("1.0.0")!)
   }
 
-  @Test("Compare versions with different formats")
-  func compareVersionsWithDifferentFormats() {
+  @Test
+  func `Compare versions with different formats`() {
     let v1 = SemanticVersion("v1.0.0")!
     let v2 = SemanticVersion("1.0.0")!
     let v3 = SemanticVersion("1.0")!
@@ -87,8 +87,8 @@ struct SemanticVersionTests {
     #expect(v3 == v4)
   }
 
-  @Test("String description")
-  func stringDescription() {
+  @Test
+  func `String description`() {
     let v1 = SemanticVersion(major: 1, minor: 2, patch: 3)
     #expect(v1.description == "1.2.3")
 
@@ -96,16 +96,16 @@ struct SemanticVersionTests {
     #expect(v2.description == "1.0.0-beta")
   }
 
-  @Test("Codable roundtrip")
-  func codableRoundtrip() throws {
+  @Test
+  func `Codable roundtrip`() throws {
     let original = SemanticVersion(major: 1, minor: 2, patch: 3, prerelease: "beta")
     let encoded = try JSONEncoder().encode(original)
     let decoded = try JSONDecoder().decode(SemanticVersion.self, from: encoded)
     #expect(decoded == original)
   }
 
-  @Test("Decode from string")
-  func decodeFromString() throws {
+  @Test
+  func `Decode from string`() throws {
     let json = "\"1.2.3\""
     let decoded = try JSONDecoder().decode(SemanticVersion.self, from: json.data(using: .utf8)!)
     #expect(decoded.major == 1)
@@ -113,8 +113,8 @@ struct SemanticVersionTests {
     #expect(decoded.patch == 3)
   }
 
-  @Test("Invalid version returns nil")
-  func invalidVersionReturnsNil() {
+  @Test
+  func `Invalid version returns nil`() {
     #expect(SemanticVersion("") == nil)
     #expect(SemanticVersion("abc") == nil)
     #expect(SemanticVersion("   ") == nil)

@@ -3,10 +3,10 @@ import Testing
 
 @testable import GitHubUpdateChecker
 
-@Suite("GitHubRelease")
-struct GitHubReleaseTests {
-  @Test("Version extraction from tag")
-  func versionExtraction() {
+@Suite
+struct `GitHubRelease tests` {
+  @Test
+  func `Version extraction from tag`() {
     let release = makeRelease(tagName: "v1.2.3")
     #expect(release.version == SemanticVersion(major: 1, minor: 2, patch: 3))
 
@@ -14,8 +14,8 @@ struct GitHubReleaseTests {
     #expect(release2.version == SemanticVersion(major: 1, minor: 2, patch: 3))
   }
 
-  @Test("Primary asset selection prefers DMG")
-  func primaryAssetSelectionDMG() {
+  @Test
+  func `Primary asset selection prefers DMG`() {
     let release = makeRelease(assets: [
       makeAsset(name: "app.zip"),
       makeAsset(name: "app.dmg"),
@@ -24,8 +24,8 @@ struct GitHubReleaseTests {
     #expect(release.primaryAsset?.name == "app.dmg")
   }
 
-  @Test("Primary asset selection falls back to ZIP")
-  func primaryAssetSelectionZIP() {
+  @Test
+  func `Primary asset selection falls back to ZIP`() {
     let release = makeRelease(assets: [
       makeAsset(name: "app.tar.gz"),
       makeAsset(name: "app.zip")
@@ -33,8 +33,8 @@ struct GitHubReleaseTests {
     #expect(release.primaryAsset?.name == "app.zip")
   }
 
-  @Test("Asset matching with pattern")
-  func assetMatchingWithPattern() {
+  @Test
+  func `Asset matching with pattern`() {
     let release = makeRelease(assets: [
       makeAsset(name: "app-x86.dmg"),
       makeAsset(name: "app-arm64.dmg")
@@ -43,8 +43,8 @@ struct GitHubReleaseTests {
     #expect(match?.name == "app-arm64.dmg")
   }
 
-  @Test("JSON decoding from GitHub API format")
-  func jsonDecoding() throws {
+  @Test
+  func `JSON decoding from GitHub API format`() throws {
     let json = """
       {
           "id": 12345,
