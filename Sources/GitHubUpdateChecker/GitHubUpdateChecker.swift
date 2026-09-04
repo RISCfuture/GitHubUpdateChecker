@@ -1,5 +1,6 @@
-import Foundation
+public import Foundation
 import Logging
+public import Observation
 #if os(macOS)
   import AppKit
 #endif

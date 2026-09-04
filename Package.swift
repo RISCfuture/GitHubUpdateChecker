@@ -3,6 +3,15 @@
 
 import PackageDescription
 
+let upcomingFeatures: [SwiftSetting] = [
+  .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+  .enableUpcomingFeature("InferIsolatedConformances"),
+  .enableUpcomingFeature("ImmutableWeakCaptures"),
+  .enableUpcomingFeature("MemberImportVisibility"),
+  .enableUpcomingFeature("ExistentialAny"),
+  .enableUpcomingFeature("InternalImportsByDefault")
+]
+
 let package = Package(
   name: "GitHubUpdateChecker",
   defaultLocalization: "en",
@@ -33,20 +42,13 @@ let package = Package(
       resources: [
         .process("Resources")
       ],
-      swiftSettings: [
-        .swiftLanguageMode(.v6),
-        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-        .enableUpcomingFeature("InferIsolatedConformances")
-      ]
+      swiftSettings: upcomingFeatures
     ),
     .testTarget(
       name: "GitHubUpdateCheckerTests",
       dependencies: ["GitHubUpdateChecker"],
-      swiftSettings: [
-        .swiftLanguageMode(.v6),
-        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-        .enableUpcomingFeature("InferIsolatedConformances")
-      ]
+      swiftSettings: upcomingFeatures
     )
-  ]
+  ],
+  swiftLanguageModes: [.v5, .v6]
 )

@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// The result of checking for updates.
 ///

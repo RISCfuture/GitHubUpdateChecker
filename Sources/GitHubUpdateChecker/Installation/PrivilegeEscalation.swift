@@ -1,6 +1,6 @@
 #if os(macOS)
-  import AppKit
-  import Foundation
+  public import AppKit
+  public import Foundation
   import Logging
   import Security
 

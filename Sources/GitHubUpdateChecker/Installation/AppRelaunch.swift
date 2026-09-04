@@ -1,6 +1,6 @@
 #if os(macOS)
   import AppKit
-  import Foundation
+  public import Foundation
   import Logging
 
   /// Logger for AppRelaunch - declared outside class to be nonisolated

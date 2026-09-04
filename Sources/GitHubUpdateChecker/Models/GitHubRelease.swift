@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// A GitHub release from the Releases API.
 ///

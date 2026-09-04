@@ -1,7 +1,7 @@
 #if os(macOS)
   import AppKit
 #endif
-import Foundation
+public import Foundation
 import Logging
 
 /// Progress information for an ongoing download
@@ -38,7 +38,7 @@ public actor UpdateDownloader {
   private var activeDownload:
     (
       task: Task<Void, Never>,
-      continuation: AsyncThrowingStream<DownloadProgress, Error>.Continuation
+      continuation: AsyncThrowingStream<DownloadProgress, any Error>.Continuation
     )?
   private let session: URLSession
   private let logger = Logger(label: "codes.tim.GitHubUpdateChecker.Downloader")
@@ -65,7 +65,7 @@ public actor UpdateDownloader {
   public func download(
     asset: GitHubAsset,
     to directory: URL? = nil
-  ) throws -> (progress: AsyncThrowingStream<DownloadProgress, Error>, fileURL: URL) {
+  ) throws -> (progress: AsyncThrowingStream<DownloadProgress, any Error>, fileURL: URL) {
     // Cancel any existing download
     cancelDownload()
 
@@ -91,7 +91,7 @@ public actor UpdateDownloader {
     // Remove existing file if present
     try? FileManager.default.removeItem(at: destinationURL)
 
-    let (stream, continuation) = AsyncThrowingStream<DownloadProgress, Error>.makeStream()
+    let (stream, continuation) = AsyncThrowingStream<DownloadProgress, any Error>.makeStream()
 
     let downloadTask = Task { [weak self] in
       do {

@@ -1,6 +1,6 @@
 #if os(macOS)
   import AppKit
-  import Foundation
+  public import Foundation
   import Logging
 
   /// Handles installing updates by replacing the current app bundle
@@ -61,7 +61,7 @@
     public func install(
       from fileURL: URL,
       to targetAppURL: URL? = nil
-    ) throws -> (progress: AsyncThrowingStream<InstallProgress, Error>, installedURL: URL) {
+    ) throws -> (progress: AsyncThrowingStream<InstallProgress, any Error>, installedURL: URL) {
       // Detect file type
       guard let installableType = detectType(from: fileURL) else {
         throw GeneralInstallationError.unsupportedFileType(fileURL.pathExtension)
@@ -83,7 +83,7 @@
         ]
       )
 
-      let (stream, continuation) = AsyncThrowingStream<InstallProgress, Error>.makeStream()
+      let (stream, continuation) = AsyncThrowingStream<InstallProgress, any Error>.makeStream()
 
       let installTask = Task { [weak self] in
         guard let self else {
