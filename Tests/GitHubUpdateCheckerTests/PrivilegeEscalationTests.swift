@@ -4,10 +4,10 @@
 
   @testable import GitHubUpdateChecker
 
-  @Suite("PrivilegeEscalation")
-  struct PrivilegeEscalationTests {
-    @Test("Existing read-only destination in a writable directory")
-    func readOnlyDestination() throws {
+  @Suite
+  struct `PrivilegeEscalation tests` {
+    @Test
+    func `Existing read-only destination in a writable directory`() throws {
       try withTemporaryDirectory { directory in
         let bundle = directory.appending(component: "Installed.app")
         try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: false)
@@ -20,8 +20,8 @@
       }
     }
 
-    @Test("Destination that does not exist yet in a writable directory")
-    func newDestination() throws {
+    @Test
+    func `Destination that does not exist yet in a writable directory`() throws {
       try withTemporaryDirectory { directory in
         let destination = directory.appending(component: "New.app")
 

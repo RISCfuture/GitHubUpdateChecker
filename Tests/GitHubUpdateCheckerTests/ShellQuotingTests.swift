@@ -14,12 +14,12 @@
     "/Users/tim/a b\tc/Zephyr.app"
   ]
 
-  @Suite("Shell quoting")
-  struct ShellQuotingTests {
+  @Suite
+  struct `Shell quoting` {
     /// The quoted form has to survive `sh` and come back out byte for byte, which is the only
     /// property the callers actually depend on.
-    @Test("A quoted path reaches the shell unchanged", arguments: awkwardPaths)
-    func shellQuotedSurvivesTheShell(path: String) throws {
+    @Test(arguments: awkwardPaths)
+    func `A quoted path reaches the shell unchanged`(path: String) throws {
       #expect(try runInShell("printf %s \(path.shellQuoted)") == path)
     }
 
@@ -27,8 +27,8 @@
     /// AppleScript as well — a layer the quoting above knows nothing about.
     /// `NSAppleScript` is main-thread only, which a test case is not by default.
     @MainActor
-    @Test("An escaped command reaches AppleScript unchanged", arguments: awkwardPaths)
-    func appleScriptEscapedSurvivesAppleScript(path: String) throws {
+    @Test(arguments: awkwardPaths)
+    func `An escaped command reaches AppleScript unchanged`(path: String) throws {
       let command = "printf %s \(path.shellQuoted)"
       let script = "return \"\(command.escapedForAppleScriptLiteral)\""
 

@@ -3,10 +3,10 @@ import Testing
 
 @testable import GitHubUpdateChecker
 
-@Suite("GitHubAsset")
-struct GitHubAssetTests {
-  @Test("Formatted size")
-  func formattedSize() {
+@Suite
+struct `GitHubAsset tests` {
+  @Test
+  func `Formatted size`() {
     let smallAsset = GitHubAsset(
       id: 1,
       name: "small.zip",

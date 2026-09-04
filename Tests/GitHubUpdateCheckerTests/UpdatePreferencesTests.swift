@@ -6,8 +6,8 @@ import Testing
 @Suite("UpdatePreferences")
 @MainActor
 struct UpdatePreferencesTests {
-  @Test("Skip version management")
-  func skipVersionManagement() {
+  @Test
+  func `Skip version management`() {
     let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
     let prefs = UpdatePreferences(defaults: defaults)
     let version = SemanticVersion(major: 1, minor: 0, patch: 0)
@@ -21,8 +21,8 @@ struct UpdatePreferencesTests {
     #expect(prefs.isVersionSkipped(version) == false)
   }
 
-  @Test("Cadence persistence")
-  func cadencePersistence() {
+  @Test
+  func `Cadence persistence`() {
     let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
     let prefs = UpdatePreferences(defaults: defaults)
 
@@ -34,8 +34,8 @@ struct UpdatePreferencesTests {
     #expect(prefs2.updateCadence == .weekly)
   }
 
-  @Test("Default values")
-  func defaultValues() {
+  @Test
+  func `Default values`() {
     let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
     let prefs = UpdatePreferences(defaults: defaults)
 
@@ -46,8 +46,8 @@ struct UpdatePreferencesTests {
     #expect(prefs.checkForPrereleases == false)
   }
 
-  @Test("Reset to defaults")
-  func resetToDefaults() {
+  @Test
+  func `Reset to defaults`() {
     let defaults = UserDefaults(suiteName: "test-\(UUID().uuidString)")!
     let prefs = UpdatePreferences(defaults: defaults)
 

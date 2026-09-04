@@ -3,10 +3,10 @@ import Testing
 
 @testable import GitHubUpdateChecker
 
-@Suite("UpdateCheckResult")
-struct UpdateCheckResultTests {
-  @Test("hasUpdate returns true only for updateAvailable")
-  func hasUpdate() {
+@Suite
+struct `UpdateCheckResult tests` {
+  @Test
+  func `hasUpdate returns true only for updateAvailable`() {
     let release = makeRelease()
 
     #expect(UpdateCheckResult.updateAvailable(release).hasUpdate == true)
@@ -15,8 +15,8 @@ struct UpdateCheckResultTests {
     #expect(UpdateCheckResult.error(.networkError("test")).hasUpdate == false)
   }
 
-  @Test("release property extracts release when available")
-  func releaseProperty() {
+  @Test
+  func `release property extracts release when available`() {
     let release = makeRelease()
 
     #expect(UpdateCheckResult.updateAvailable(release).release != nil)
