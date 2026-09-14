@@ -6,8 +6,6 @@
 #
 # This package is Category B. swift-log requires tools-version 6.2, so Swift 6.0
 # and 6.1 can no longer resolve it.
-#
-# When Swift 6.4 ships: add 6.4 legs alongside 6.2
 
 name: CI
 
@@ -31,10 +29,14 @@ jobs:
         include:
           - os: macos-15
             swift: "6.2"
+          - os: macos-15
+            swift: "6.4"
           - os: macos-26
             swift: "6.2"
           - os: macos-26
             swift: "6.3"
+          - os: macos-26
+            swift: "6.4"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
