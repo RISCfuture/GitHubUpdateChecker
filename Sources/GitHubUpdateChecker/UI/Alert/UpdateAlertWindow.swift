@@ -1,5 +1,6 @@
 #if os(macOS)
   public import AppKit
+  import Observation
   import SwiftUI
 
   /// Manages the update alert window presentation
@@ -14,6 +15,7 @@
 
     private var window: NSWindow?
     private var updateAlertModel: UpdateAlertModel?
+    private var stateObserver: Task<Void, Never>?
     private weak var parentChecker: GitHubUpdateChecker?
 
     /// The current update alert model (for external progress updates)
@@ -146,6 +148,8 @@
 
     /// Dismiss the current window
     public func dismiss() {
+      stateObserver?.cancel()
+      stateObserver = nil
       window?.close()
       window = nil
       updateAlertModel = nil
@@ -153,18 +157,19 @@
 
     // MARK: - Private Methods
 
+    /// Swap the window's content in step with the model, for as long as the alert is on screen.
+    ///
+    /// Every state the model passes through gets its own view: `Observations` hands back each value
+    /// the state takes in turn, so a download that finishes straight into an installation still puts
+    /// the progress view on screen instead of being coalesced into the transition that follows it.
     private func observeModelState(_ model: UpdateAlertModel) {
-      startObserving(model)
-    }
-
-    private func startObserving(_ model: UpdateAlertModel) {
-      withObservationTracking {
-        _ = model.state
-      } onChange: { [weak self] in
-        Task { @MainActor [weak self] in
+      stateObserver?.cancel()
+      stateObserver = Task { [weak self] in
+        let states = Observations { model.state }
+        // The first value is the one the window was just built for.
+        for await state in states.dropFirst() {
           guard let self else { return }
-          self.handleStateChange(model.state)
-          self.startObserving(model)
+          handleStateChange(state)
         }
       }
     }
