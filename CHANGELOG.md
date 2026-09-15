@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.1.1] - 2026-09-14
+
+### Changed
+
+- Modules this package uses only internally are no longer visible to code that
+  imports it. With `InternalImportsByDefault` enabled, `Logging` and
+  `MarkdownUI` are internal imports, while the modules whose types appear in the
+  public API — `Foundation`, `AppKit`, `SwiftUI`, `Observation` — are imported
+  publicly and still come through. A file that referred to swift-log or
+  MarkdownUI without importing it, letting `import GitHubUpdateChecker` carry it
+  in, now needs its own import.
+
 ## [2.1.0] - 2026-08-30
 
 ### Added
