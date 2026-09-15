@@ -55,7 +55,7 @@
 
       guard
         let plist =
-          try? PropertyListSerialization.propertyList(from: outputData, format: nil)
+          try? unsafe PropertyListSerialization.propertyList(from: outputData, format: nil)
           as? [String: Any],
         let systemEntities = plist["system-entities"] as? [[String: Any]]
       else {
@@ -104,7 +104,7 @@
       // Some DMGs have a nested Applications folder or similar
       for item in contents {
         var isDirectory: ObjCBool = false
-        if fileManager.fileExists(atPath: item.path, isDirectory: &isDirectory),
+        if unsafe fileManager.fileExists(atPath: item.path, isDirectory: &isDirectory),
           isDirectory.boolValue
         {
           if let nestedContents = try? fileManager.contentsOfDirectory(

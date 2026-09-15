@@ -271,8 +271,8 @@ public actor UpdateDownloader {
       metadata: [
         "fileName": "\(destination.lastPathComponent)",
         "bytesReceived": "\(bytesReceived)",
-        "elapsedSeconds": "\(String(format: "%.1f", elapsedTime))",
-        "speedMBps": "\(String(format: "%.2f", speedMBps))"
+        "elapsedSeconds": "\(unsafe String(format: "%.1f", elapsedTime))",
+        "speedMBps": "\(unsafe String(format: "%.2f", speedMBps))"
       ]
     )
 
@@ -398,14 +398,15 @@ public extension UpdateDownloader {
 
     private init() {
       var code: SecCode?
-      guard SecCodeCopySelf([], &code) == errSecSuccess, let code else {
+      guard unsafe SecCodeCopySelf([], &code) == errSecSuccess, let code else {
         self.hasDownloadsEntitlement = false
         self.hasUserSelectedEntitlement = false
         return
       }
 
       var staticCode: SecStaticCode?
-      guard SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode else {
+      guard unsafe SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode
+      else {
         self.hasDownloadsEntitlement = false
         self.hasUserSelectedEntitlement = false
         return
@@ -413,7 +414,7 @@ public extension UpdateDownloader {
 
       var info: CFDictionary?
       guard
-        SecCodeCopySigningInformation(
+        unsafe SecCodeCopySigningInformation(
           staticCode,
           SecCSFlags(rawValue: kSecCSSigningInformation),
           &info

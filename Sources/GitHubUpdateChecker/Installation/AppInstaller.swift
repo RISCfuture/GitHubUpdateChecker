@@ -296,7 +296,7 @@
       // Check for Contents/MacOS directory
       let macOSDir = url.appendingPathComponent("Contents/MacOS")
       var isDirectory: ObjCBool = false
-      guard fileManager.fileExists(atPath: macOSDir.path, isDirectory: &isDirectory),
+      guard unsafe fileManager.fileExists(atPath: macOSDir.path, isDirectory: &isDirectory),
         isDirectory.boolValue
       else {
         throw VerificationError.failed("Invalid application bundle structure")

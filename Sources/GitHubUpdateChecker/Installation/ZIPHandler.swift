@@ -118,7 +118,7 @@
           // Verify it's actually a bundle (has Contents folder)
           let contentsURL = url.appendingPathComponent("Contents")
           var isDirectory: ObjCBool = false
-          if fileManager.fileExists(atPath: contentsURL.path, isDirectory: &isDirectory),
+          if unsafe fileManager.fileExists(atPath: contentsURL.path, isDirectory: &isDirectory),
             isDirectory.boolValue
           {
             logger.info("Found app in ZIP (nested)", metadata: ["app": "\(url.lastPathComponent)"])

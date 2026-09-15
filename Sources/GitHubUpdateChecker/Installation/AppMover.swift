@@ -215,7 +215,7 @@
       try fileManager.copyItem(at: source, to: destination)
 
       // Trash the original
-      try fileManager.trashItem(at: source, resultingItemURL: nil)
+      try unsafe fileManager.trashItem(at: source, resultingItemURL: nil)
     }
 
     /// Move with elevated privileges (destination requires admin)
@@ -224,7 +224,7 @@
       try PrivilegeEscalation.copyWithElevatedPrivileges(from: source, to: destination)
 
       // Trash the original (this shouldn't need elevation)
-      try FileManager.default.trashItem(at: source, resultingItemURL: nil)
+      try unsafe FileManager.default.trashItem(at: source, resultingItemURL: nil)
     }
 
     /// Find the preferred Applications directory
