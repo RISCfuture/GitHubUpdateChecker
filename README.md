@@ -3,7 +3,7 @@
 [![Build and Test](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml/badge.svg)](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml)
 [![Documentation](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/documentation.yml/badge.svg)](https://riscfuture.github.io/GitHubUpdateChecker/)
 [![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-orange.svg)](https://swift.org)
-[![macOS 14+](https://img.shields.io/badge/macOS-14+-blue.svg)](https://developer.apple.com/macos/)
+[![macOS 26+](https://img.shields.io/badge/macOS-26+-blue.svg)](https://developer.apple.com/macos/)
 
 A lightweight Swift library for checking app updates via GitHub's Releases API.
 Inspired by [Sparkle](https://sparkle-project.org/), but simpler and focused on
@@ -20,7 +20,7 @@ GitHub-hosted releases.
 
 ## Requirements
 
-- macOS 14.0+
+- macOS 26.0+
 - Swift 6.2+
 
 ## Installation
