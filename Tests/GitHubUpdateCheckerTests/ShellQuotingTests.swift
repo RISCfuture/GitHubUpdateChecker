@@ -54,7 +54,7 @@
       // swiftlint:disable:next legacy_objc_type
       var error: NSDictionary?
       let script = try #require(NSAppleScript(source: source))
-      let result = script.executeAndReturnError(&error)
+      let result = unsafe script.executeAndReturnError(&error)
 
       #expect(error == nil)
       return result.stringValue ?? ""

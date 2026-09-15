@@ -105,7 +105,7 @@
         throw AuthorizationError.failed("Failed to create AppleScript")
       }
 
-      _ = appleScript.executeAndReturnError(&error)
+      _ = unsafe appleScript.executeAndReturnError(&error)
 
       guard let error else { return }
 
@@ -139,9 +139,9 @@
       // Create authorization with pre-authorization for privileged operations
       let flags: AuthorizationFlags = [.interactionAllowed, .extendRights, .preAuthorize]
 
-      let status = AuthorizationCreate(nil, nil, flags, &authRef)
+      let status = unsafe AuthorizationCreate(nil, nil, flags, &authRef)
 
-      guard status == errAuthorizationSuccess, let ref = authRef else {
+      guard status == errAuthorizationSuccess, let ref = unsafe authRef else {
         if status == errAuthorizationCanceled {
           throw AuthorizationError.denied
         }
@@ -150,13 +150,13 @@
         )
       }
 
-      return ref
+      return unsafe ref
     }
 
     /// Free an authorization reference
     /// - Parameter authRef: The authorization reference to free
     public static func freeAuthorization(_ authRef: AuthorizationRef) {
-      AuthorizationFree(authRef, [])
+      unsafe AuthorizationFree(authRef, [])
     }
   }
 
