@@ -1,5 +1,21 @@
 # Change Log
 
+## [Unreleased]
+
+### Changed
+
+- The update alert is now one fixed-size window, laid out like Sparkle's. The
+  app icon, the version line, and the release notes stay in place for the
+  whole update, and the release notes wrap at the window's width and scroll
+  instead of stretching the window to fit their longest line. Only the strip
+  along the bottom changes: the Skip, Remind Me Later, and Download buttons
+  give way to a progress bar with a Cancel button while the update downloads,
+  then to Show in Finder, Install Update, and Close once it has, then to the
+  installation progress and the restart prompt. An error appears in the same
+  strip with an OK button that returns the alert to its buttons. The window
+  keeps its "Software Update" title throughout, and its close button is
+  disabled only while a download or installation is in flight.
+
 ## [2.1.1] - 2026-09-14
 
 ### Changed

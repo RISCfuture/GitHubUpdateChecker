@@ -16,39 +16,29 @@
     }
   }
 
-  /// Shows installation progress after download completes
+  /// The update alert's bottom strip while an update installs: a spinner with the current phase's
+  /// message, and a Cancel button for the phases that can still be abandoned.
   struct InstallProgressView: View {
     var model: InstallProgressModel
 
     var body: some View {
-      VStack {
-        // Progress indicator
+      HStack(spacing: 12) {
         ProgressView()
-          .controlSize(.large)
-          .padding(.bottom)
+          .controlSize(.small)
 
-        // Phase title
-        Text("Installing Update")
-          .font(.headline)
+        UpdateStatusText(title: Text("Installing Update")) {
+          Text(model.statusMessage)
+        }
 
-        // Status message
-        Text(model.statusMessage)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
-          .multilineTextAlignment(.center)
+        Spacer()
 
-        // Cancel button (only show during certain phases)
         if canCancel {
           Button("Cancel") {
             model.onCancel()
           }
           .keyboardShortcut(.cancelAction)
-          .buttonStyle(.borderless)
-          .padding(.top, 8)
         }
       }
-      .padding()
-      .frame(minWidth: 350)
     }
 
     private var canCancel: Bool {
@@ -67,11 +57,15 @@
     let model = InstallProgressModel()
     model.update(phase: .copying, message: "Installing update...", onCancel: {})
     return InstallProgressView(model: model)
+      .padding()
+      .frame(width: 500)
   }
 
   #Preview("Mounting") {
     let model = InstallProgressModel()
     model.update(phase: .mounting, message: "Opening disk image...", onCancel: {})
     return InstallProgressView(model: model)
+      .padding()
+      .frame(width: 500)
   }
 #endif

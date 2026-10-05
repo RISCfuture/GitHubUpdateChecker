@@ -1,49 +1,30 @@
 #if os(macOS)
   import SwiftUI
 
-  /// A view displaying structured error information
+  /// The update alert's bottom strip when a download or installation fails: the error's
+  /// description, reason, and recovery suggestion beside an OK button.
   struct ErrorAlertView: View {
     let errorInfo: ErrorInfo
     let onDismiss: () -> Void
 
     var body: some View {
-      VStack(spacing: 4) {
-        // Error icon
-        Image(systemName: "exclamationmark.triangle.fill")
-          .font(.system(size: 48))
-          .foregroundStyle(.red)
-          .accessibilityHidden(true)
-
-        // Error category (errorDescription)
-        Text(errorInfo.description)
-          .font(.headline)
-          .multilineTextAlignment(.center)
-
-        // Failure reason (instance-specific details)
-        if let failureReason = errorInfo.failureReason {
-          Text(failureReason)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
+      HStack {
+        UpdateStatusText(title: Text(errorInfo.description)) {
+          if let failureReason = errorInfo.failureReason {
+            Text(failureReason)
+          }
+          if let recoverySuggestion = errorInfo.recoverySuggestion {
+            Text(recoverySuggestion)
+          }
         }
 
-        // Recovery suggestion (actionable instructions)
-        if let recoverySuggestion = errorInfo.recoverySuggestion {
-          Text(recoverySuggestion)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.top, 8)
-        }
+        Spacer()
 
         Button("OK") {
           onDismiss()
         }
         .keyboardShortcut(.defaultAction)
-        .padding(.top, 8)
       }
-      .padding()
-      .frame(minWidth: 300)
     }
   }
 
@@ -58,6 +39,8 @@
       ),
       onDismiss: {}
     )
+    .padding()
+    .frame(width: 500)
   }
 
   #Preview("Without Recovery Suggestion") {
@@ -69,6 +52,8 @@
       ),
       onDismiss: {}
     )
+    .padding()
+    .frame(width: 500)
   }
 
   #Preview("Minimal") {
@@ -80,5 +65,7 @@
       ),
       onDismiss: {}
     )
+    .padding()
+    .frame(width: 500)
   }
 #endif

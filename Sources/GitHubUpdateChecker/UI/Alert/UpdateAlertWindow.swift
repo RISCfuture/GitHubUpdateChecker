@@ -86,12 +86,8 @@
       }
 
       updateAlertModel = model
-
-      let view = UpdateAlertView(model: model)
-      showWindow(with: AnyView(view), title: "Software Update", closable: true)
-
-      // Observe state changes to swap windows
-      observeModelState(model)
+      showWindow(for: model)
+      observeClosability(of: model)
     }
 
     /// Show the "no updates available" alert
@@ -157,129 +153,31 @@
 
     // MARK: - Private Methods
 
-    /// Swap the window's content in step with the model, for as long as the alert is on screen.
+    /// Keep the close button in step with the model, for as long as the alert is on screen.
     ///
-    /// Every state the model passes through gets its own view: `Observations` hands back each value
-    /// the state takes in turn, so a download that finishes straight into an installation still puts
-    /// the progress view on screen instead of being coalesced into the transition that follows it.
-    private func observeModelState(_ model: UpdateAlertModel) {
+    /// The window keeps its size and content through every state and the SwiftUI view inside follows
+    /// the model on its own, so the style mask is the controller's only per-state concern.
+    private func observeClosability(of model: UpdateAlertModel) {
       stateObserver?.cancel()
       stateObserver = Task { [weak self] in
-        let states = Observations { model.state }
-        // The first value is the one the window was just built for.
-        for await state in states.dropFirst() {
+        for await state in Observations({ model.state }) {
           guard let self else { return }
-          handleStateChange(state)
+          window?.isClosable = state.allowsClosing
         }
       }
     }
 
-    private func handleStateChange(_ state: UpdateAlertState) {
-      guard let model = updateAlertModel else { return }
-
-      switch state {
-        case .idle:
-          // Show the main update alert view
-          let view = UpdateAlertView(model: model)
-          replaceWindowContent(with: AnyView(view), title: "Software Update", closable: true)
-
-        case .downloading:
-          let view = DownloadProgressView(model: model.downloadProgress)
-          replaceWindowContent(with: AnyView(view), title: "", closable: false)
-
-        case let .complete(fileName, fileURL):
-          let canInstall = canAutoInstall(fileURL: fileURL)
-          let view = DownloadCompleteView(
-            fileName: fileName,
-            canInstall: canInstall,
-            onRevealInFinder: {
-              model.onRevealInFinder(fileURL)
-            },
-            onInstall: {
-              model.onInstall(fileURL)
-            },
-            onClose: {
-              model.onDismiss()
-            }
-          )
-          replaceWindowContent(with: AnyView(view), title: "", closable: true)
-
-        case .installing:
-          let view = InstallProgressView(model: model.installProgress)
-          replaceWindowContent(with: AnyView(view), title: "", closable: false)
-
-        case .installComplete:
-          let view = RestartPromptView(
-            appName: model.appName,
-            newVersion: model.release?.version?.description ?? "Unknown",
-            onRestartNow: model.onRestartNow,
-            onRestartLater: {
-              model.onRestartLater()
-              model.onDismiss()
-            }
-          )
-          replaceWindowContent(with: AnyView(view), title: "", closable: true)
-
-        case let .error(errorInfo):
-          let view = ErrorAlertView(
-            errorInfo: errorInfo,
-            onDismiss: {
-              model.reset()
-            }
-          )
-          replaceWindowContent(with: AnyView(view), title: "", closable: true)
-      }
-    }
-
-    private func canAutoInstall(fileURL: URL) -> Bool {
-      AppInstaller.canAutoInstall(fileURL: fileURL)
-    }
-
-    private func replaceWindowContent(with view: AnyView, title: String, closable: Bool) {
-      let newHostingView = NSHostingView(rootView: view)
-      newHostingView.setContentHuggingPriority(.required, for: .horizontal)
-      newHostingView.setContentHuggingPriority(.required, for: .vertical)
-
-      if let window {
-        // Update existing window
-        window.contentView = newHostingView
-        window.title = title
-
-        // Update style mask for closable
-        var styleMask: NSWindow.StyleMask = [.titled]
-        if closable {
-          styleMask.insert(.closable)
-        }
-        window.styleMask = styleMask
-
-        window.setContentSize(newHostingView.fittingSize)
-      } else {
-        // Create new window
-        showWindow(with: view, title: title, closable: closable)
-      }
-    }
-
-    private func showWindow(with view: AnyView, title: String, closable: Bool) {
-      let hostingView = NSHostingView(rootView: view)
-      hostingView.setContentHuggingPriority(.required, for: .horizontal)
-      hostingView.setContentHuggingPriority(.required, for: .vertical)
-
-      var styleMask: NSWindow.StyleMask = [.titled]
-      if closable {
-        styleMask.insert(.closable)
-      }
-
+    private func showWindow(for model: UpdateAlertModel) {
       let window = NSWindow(
-        contentRect: .zero,
-        styleMask: styleMask,
+        contentRect: CGRect(origin: .zero, size: UpdateAlertView.contentSize),
+        styleMask: [.titled, .closable],
         backing: .buffered,
         defer: false
       )
 
-      window.contentView = hostingView
-      window.title = title
+      window.contentView = NSHostingView(rootView: UpdateAlertView(model: model))
+      window.title = "Software Update"
       window.isReleasedWhenClosed = false
-      window.setContentSize(hostingView.fittingSize)
       window.center()
       window.makeKeyAndOrderFront(nil)
 
@@ -287,6 +185,22 @@
       NSApp.activate(ignoringOtherApps: true)
 
       self.window = window
+    }
+  }
+
+  // MARK: - NSWindow Extension
+
+  extension NSWindow {
+    /// Whether the window's close button is enabled.
+    fileprivate var isClosable: Bool {
+      get { styleMask.contains(.closable) }
+      set {
+        if newValue {
+          styleMask.insert(.closable)
+        } else {
+          styleMask.remove(.closable)
+        }
+      }
     }
   }
 

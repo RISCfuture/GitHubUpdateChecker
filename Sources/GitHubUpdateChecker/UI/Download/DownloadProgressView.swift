@@ -30,7 +30,8 @@
     }
   }
 
-  /// A view showing download progress for an update
+  /// The update alert's bottom strip while an update downloads: a progress bar with its byte and
+  /// time-remaining captions, and a Cancel button.
   struct DownloadProgressView: View {
     // MARK: - Type Properties
 
@@ -49,10 +50,7 @@
     // MARK: - Body
 
     var body: some View {
-      VStack(alignment: .leading) {
-        Text("Downloading update…")
-          .font(.headline)
-
+      HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
           ProgressView(value: model.progress, total: 1.0)
             .progressViewStyle(.linear)
@@ -73,18 +71,12 @@
           .font(.caption)
           .foregroundStyle(.secondary)
         }
-        .padding(.bottom)
 
-        HStack {
-          Spacer()
-          Button("Cancel") {
-            model.onCancel()
-          }
-          Spacer()
+        Button("Cancel") {
+          model.onCancel()
         }
+        .keyboardShortcut(.cancelAction)
       }
-      .padding()
-      .frame(width: 350)
     }
   }
 
@@ -101,5 +93,7 @@
       onCancel: {}
     )
     return DownloadProgressView(model: model)
+      .padding()
+      .frame(width: 500)
   }
 #endif
