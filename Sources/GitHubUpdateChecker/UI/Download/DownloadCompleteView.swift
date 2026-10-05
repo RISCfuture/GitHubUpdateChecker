@@ -1,10 +1,9 @@
 #if os(macOS)
   import SwiftUI
 
-  /// The update alert's bottom strip once the download has finished: the downloaded file's name
-  /// beside buttons to reveal it, install it, or close the alert.
+  /// The update alert's bottom strip once the download has finished: buttons to close the alert,
+  /// reveal the downloaded file, or install it.
   struct DownloadCompleteView: View {
-    let fileName: String
     let canInstall: Bool
     let onRevealInFinder: () -> Void
     let onInstall: () -> Void
@@ -12,12 +11,6 @@
 
     var body: some View {
       HStack {
-        UpdateStatusText(title: Text("Download Complete")) {
-          Text(fileName)
-            .lineLimit(1)
-            .truncationMode(.middle)
-        }
-
         Spacer()
 
         Button("Close") { onClose() }
@@ -37,7 +30,6 @@
 
   #Preview("Auto Install (DMG)") {
     DownloadCompleteView(
-      fileName: "MyApp-2.0.0.dmg",
       canInstall: true,
       onRevealInFinder: {},
       onInstall: {},
@@ -49,7 +41,6 @@
 
   #Preview("Manual Install (PKG)") {
     DownloadCompleteView(
-      fileName: "MyApp-2.0.0.pkg",
       canInstall: false,
       onRevealInFinder: {},
       onInstall: {},

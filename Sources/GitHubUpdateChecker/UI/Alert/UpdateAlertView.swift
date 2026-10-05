@@ -100,9 +100,8 @@
           case .downloading:
             DownloadProgressView(model: model.downloadProgress)
 
-          case let .complete(fileName, fileURL):
+          case let .complete(_, fileURL):
             DownloadCompleteView(
-              fileName: fileName,
               canInstall: AppInstaller.canAutoInstall(fileURL: fileURL),
               onRevealInFinder: { model.onRevealInFinder(fileURL) },
               onInstall: { model.onInstall(fileURL) },
@@ -114,8 +113,6 @@
 
           case .installComplete:
             RestartPromptView(
-              appName: model.appName,
-              newVersion: model.release?.version?.description ?? "Unknown",
               onRestartNow: model.onRestartNow,
               onRestartLater: {
                 model.onRestartLater()

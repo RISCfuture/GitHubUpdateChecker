@@ -9,14 +9,21 @@
 
     var body: some View {
       HStack {
-        UpdateStatusText(title: Text(errorInfo.description)) {
-          if let failureReason = errorInfo.failureReason {
-            Text(failureReason)
+        VStack(alignment: .leading, spacing: 2) {
+          Text(errorInfo.description)
+
+          Group {
+            if let failureReason = errorInfo.failureReason {
+              Text(failureReason)
+            }
+            if let recoverySuggestion = errorInfo.recoverySuggestion {
+              Text(recoverySuggestion)
+            }
           }
-          if let recoverySuggestion = errorInfo.recoverySuggestion {
-            Text(recoverySuggestion)
-          }
+          .font(.caption)
+          .foregroundStyle(.secondary)
         }
+        .fixedSize(horizontal: false, vertical: true)
 
         Spacer()
 
