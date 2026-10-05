@@ -16,7 +16,7 @@
     }
   }
 
-  /// The update alert's bottom strip while an update installs: a spinner with the current phase's
+  /// The update alert's bottom strip while an update installs: a spinner beside the current phase's
   /// message, and a Cancel button for the phases that can still be abandoned.
   struct InstallProgressView: View {
     var model: InstallProgressModel
@@ -26,9 +26,7 @@
         ProgressView()
           .controlSize(.small)
 
-        UpdateStatusText(title: Text("Installing Update")) {
-          Text(model.statusMessage)
-        }
+        Text(model.statusMessage)
 
         Spacer()
 
