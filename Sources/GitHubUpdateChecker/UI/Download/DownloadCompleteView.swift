@@ -1,7 +1,8 @@
 #if os(macOS)
   import SwiftUI
 
-  /// A view shown when download completes
+  /// The update alert's bottom strip once the download has finished: the downloaded file's name
+  /// beside buttons to reveal it, install it, or close the alert.
   struct DownloadCompleteView: View {
     let fileName: String
     let canInstall: Bool
@@ -10,43 +11,25 @@
     let onClose: () -> Void
 
     var body: some View {
-      VStack(alignment: .leading, spacing: 24) {
-        // Header: icon + text
-        HStack {
-          Image(systemName: "checkmark.circle.fill")
-            .font(.system(size: 36))
-            .foregroundStyle(.secondary)
-            .accessibilityHidden(true)
-
-          VStack(alignment: .leading) {
-            Text("Download Complete")
-              .font(.headline)
-
-            Text(fileName)
-              .font(.subheadline)
-              .foregroundStyle(.secondary)
-              .lineLimit(1)
-              .truncationMode(.middle)
-          }
+      HStack {
+        UpdateStatusText(title: Text("Download Complete")) {
+          Text(fileName)
+            .lineLimit(1)
+            .truncationMode(.middle)
         }
 
-        // Action buttons
-        HStack {
-          Button("Close") { onClose() }
-            .keyboardShortcut(.cancelAction)
+        Spacer()
 
-          Spacer()
+        Button("Close") { onClose() }
+          .keyboardShortcut(.cancelAction)
 
-          Button("Show in Finder") { onRevealInFinder() }
+        Button("Show in Finder") { onRevealInFinder() }
 
-          if canInstall {
-            Button("Install Update") { onInstall() }
-              .keyboardShortcut(.defaultAction)
-          }
+        if canInstall {
+          Button("Install Update") { onInstall() }
+            .keyboardShortcut(.defaultAction)
         }
       }
-      .padding()
-      .frame(minWidth: 200)
     }
   }
 
@@ -60,6 +43,8 @@
       onInstall: {},
       onClose: {}
     )
+    .padding()
+    .frame(width: 500)
   }
 
   #Preview("Manual Install (PKG)") {
@@ -70,5 +55,7 @@
       onInstall: {},
       onClose: {}
     )
+    .padding()
+    .frame(width: 500)
   }
 #endif

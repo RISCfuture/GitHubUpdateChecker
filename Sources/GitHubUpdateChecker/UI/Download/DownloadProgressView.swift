@@ -6,7 +6,6 @@
   @Observable
   @MainActor
   final class DownloadProgressModel {
-    var fileName: String = ""
     var progress: Double = 0
     var downloadedBytes: Measurement<UnitInformationStorage>?
     var totalBytes: Measurement<UnitInformationStorage>?
@@ -14,14 +13,12 @@
     var onCancel: () -> Void = {}
 
     func update(
-      fileName: String,
       progress: Double,
       downloadedBytes: Measurement<UnitInformationStorage>?,
       totalBytes: Measurement<UnitInformationStorage>?,
       timeRemaining: TimeInterval?,
       onCancel: @escaping () -> Void
     ) {
-      self.fileName = fileName
       self.progress = progress
       self.downloadedBytes = downloadedBytes
       self.totalBytes = totalBytes
@@ -30,7 +27,8 @@
     }
   }
 
-  /// A view showing download progress for an update
+  /// The update alert's bottom strip while an update downloads: a progress bar with its byte and
+  /// time-remaining captions, and a Cancel button.
   struct DownloadProgressView: View {
     // MARK: - Type Properties
 
@@ -49,10 +47,7 @@
     // MARK: - Body
 
     var body: some View {
-      VStack(alignment: .leading) {
-        Text("Downloading update…")
-          .font(.headline)
-
+      HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
           ProgressView(value: model.progress, total: 1.0)
             .progressViewStyle(.linear)
@@ -73,18 +68,12 @@
           .font(.caption)
           .foregroundStyle(.secondary)
         }
-        .padding(.bottom)
 
-        HStack {
-          Spacer()
-          Button("Cancel") {
-            model.onCancel()
-          }
-          Spacer()
+        Button("Cancel") {
+          model.onCancel()
         }
+        .keyboardShortcut(.cancelAction)
       }
-      .padding()
-      .frame(width: 350)
     }
   }
 
@@ -93,7 +82,6 @@
   #Preview {
     let model = DownloadProgressModel()
     model.update(
-      fileName: "MyApp-2.0.0.dmg",
       progress: 0.45,
       downloadedBytes: Measurement(value: 12.5, unit: .megabytes),
       totalBytes: Measurement(value: 28.0, unit: .megabytes),
@@ -101,5 +89,7 @@
       onCancel: {}
     )
     return DownloadProgressView(model: model)
+      .padding()
+      .frame(width: 500)
   }
 #endif

@@ -368,7 +368,7 @@ public final class GitHubUpdateChecker {
       let model = windowController.currentModel
 
       // Start download progress in built-in UI if available
-      model?.startDownload(fileName: asset.name) { [weak self] in
+      model?.startDownload { [weak self] in
         Task { @MainActor in
           await self?.downloader.cancelDownload()
           self?.isDownloading = false
@@ -385,7 +385,6 @@ public final class GitHubUpdateChecker {
         for try await progress in progressStream {
           downloadProgress = progress.fractionCompleted
           model?.updateProgress(
-            fileName: asset.name,
             progress: progress.fractionCompleted,
             downloadedBytes: Measurement(value: Double(progress.bytesWritten), unit: .bytes),
             totalBytes: Measurement(value: Double(progress.totalBytes), unit: .bytes),

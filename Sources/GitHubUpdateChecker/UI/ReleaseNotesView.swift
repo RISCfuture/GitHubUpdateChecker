@@ -32,9 +32,11 @@ public import SwiftUI
 /// - Markdown rendering via MarkdownUI
 /// - Text selection support
 /// - Automatic scrolling for long content
-/// - Rounded background matching system text background color
+/// - Rounded, hairline-bordered background matching system text background color
 /// - Placeholder text when no release notes are available
 public struct ReleaseNotesView: View {
+  private static let cornerRadius: CGFloat = 8
+
   private let content: String?
 
   public var body: some View {
@@ -52,7 +54,8 @@ public struct ReleaseNotesView: View {
     }
     .padding(12)
     .background(Color(nsColor: .textBackgroundColor))
-    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .clipShape(RoundedRectangle(cornerRadius: Self.cornerRadius))
+    .overlay(RoundedRectangle(cornerRadius: Self.cornerRadius).strokeBorder(.separator))
   }
 
   /// Creates a release notes view from a GitHub release.

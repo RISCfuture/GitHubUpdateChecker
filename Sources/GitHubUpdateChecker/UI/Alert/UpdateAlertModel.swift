@@ -55,10 +55,9 @@
       self.onDismiss = onDismiss
     }
 
-    func startDownload(fileName: String, onCancel: @escaping () -> Void) {
+    func startDownload(onCancel: @escaping () -> Void) {
       state = .downloading
       downloadProgress.update(
-        fileName: fileName,
         progress: 0,
         downloadedBytes: nil,
         totalBytes: nil,
@@ -68,7 +67,6 @@
     }
 
     func updateProgress(
-      fileName: String,
       progress: Double,
       downloadedBytes: Measurement<UnitInformationStorage>?,
       totalBytes: Measurement<UnitInformationStorage>?,
@@ -76,7 +74,6 @@
       onCancel: @escaping () -> Void
     ) {
       downloadProgress.update(
-        fileName: fileName,
         progress: progress,
         downloadedBytes: downloadedBytes,
         totalBytes: totalBytes,
@@ -127,6 +124,17 @@
     case installing(phase: InstallPhase, message: String)
     case installComplete(appURL: URL)
     case error(ErrorInfo)
+
+    /// Whether the user may close the alert window in this state.
+    ///
+    /// Work in flight has a Cancel button of its own; closing the window out from under it would
+    /// leave the download or installation running with nowhere to report.
+    var allowsClosing: Bool {
+      switch self {
+        case .downloading, .installing: false
+        case .idle, .complete, .installComplete, .error: true
+      }
+    }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
       switch (lhs, rhs) {
