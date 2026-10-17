@@ -20,6 +20,7 @@ let package = Package(
     .macOS(.v26)
   ],
   products: [
+    .library(name: "GitHubReleaseDiscovery", targets: ["GitHubReleaseDiscovery"]),
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(
       name: "GitHubUpdateChecker",
@@ -32,11 +33,23 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-log", from: "1.15.0")
   ],
   targets: [
+    .target(
+      name: "GitHubReleaseDiscovery",
+      dependencies: [.product(name: "Logging", package: "swift-log")],
+      resources: [.process("Resources")],
+      swiftSettings: upcomingFeatures
+    ),
+    .testTarget(
+      name: "GitHubReleaseDiscoveryTests",
+      dependencies: ["GitHubReleaseDiscovery"],
+      swiftSettings: upcomingFeatures
+    ),
     // Targets are the basic building blocks of a package, defining a module or a test suite.
     // Targets can depend on other targets in this package and products from dependencies.
     .target(
       name: "GitHubUpdateChecker",
       dependencies: [
+        "GitHubReleaseDiscovery",
         .product(name: "MarkdownUI", package: "swift-markdown-ui"),
         .product(name: "Logging", package: "swift-log")
       ],

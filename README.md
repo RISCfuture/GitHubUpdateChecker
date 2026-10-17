@@ -1,5 +1,23 @@
 # GitHubUpdateChecker
 
+## Release discovery without updater UI
+
+The `GitHubReleaseDiscovery` product exposes `GitHubAPIClient`, `SemanticVersion`,
+release/asset models and update-result errors with Foundation and Logging only.
+Consumers that provide their own release UI can depend on this product without
+linking MarkdownUI, download, installation or relaunch code:
+
+```swift
+import GitHubReleaseDiscovery
+
+let client = GitHubAPIClient()
+let release = try await client.fetchLatestRelease(owner: owner, repo: repository)
+```
+
+The existing `GitHubUpdateChecker` product depends on this module and preserves
+the original public discovery names through typealiases. Checking release metadata
+does not authenticate downloaded binaries or establish installation safety.
+
 [![Build and Test](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml/badge.svg)](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/ci.yml)
 [![Documentation](https://github.com/riscfuture/GitHubUpdateChecker/actions/workflows/documentation.yml/badge.svg)](https://riscfuture.github.io/GitHubUpdateChecker/)
 [![Swift 6.2+](https://img.shields.io/badge/Swift-6.2+-orange.svg)](https://swift.org)
