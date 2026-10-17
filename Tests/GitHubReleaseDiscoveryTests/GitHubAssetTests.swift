@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import GitHubUpdateChecker
+@testable import GitHubReleaseDiscovery
 
 @Suite
 struct `GitHubAsset tests` {

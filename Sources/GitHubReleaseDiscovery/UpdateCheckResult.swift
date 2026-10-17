@@ -2,8 +2,7 @@ public import Foundation
 
 /// The result of checking for updates.
 ///
-/// This enum represents all possible outcomes when calling
-/// ``GitHubUpdateChecker/GitHubUpdateChecker/checkForUpdates()``.
+/// Represents an available, absent or skipped release, or a failed check.
 ///
 /// ## Handling Results
 ///

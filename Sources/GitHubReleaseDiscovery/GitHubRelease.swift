@@ -9,17 +9,14 @@ public import Foundation
 ///
 /// ## Usage
 ///
-/// You typically receive `GitHubRelease` instances from ``UpdateCheckResult``:
+/// Fetch release metadata with ``GitHubAPIClient``:
 ///
 /// ```swift
-/// let result = try await checker.checkForUpdates()
-/// if case .updateAvailable(let release) = result {
-///     print("New version: \(release.version)")
-///     print("Release notes: \(release.body ?? "None")")
+/// let release = try await GitHubAPIClient().fetchLatestRelease(owner: owner, repo: repository)
+/// print("Release notes: \(release.body ?? "None")")
 ///
-///     if let asset = release.primaryAsset {
-///         print("Download: \(asset.browserDownloadURL)")
-///     }
+/// if let asset = release.primaryAsset {
+///     print("Download: \(asset.browserDownloadURL)")
 /// }
 /// ```
 ///
@@ -102,6 +99,29 @@ public struct GitHubRelease: Codable, Sendable, Identifiable {
     return assets.first
   }
 
+  /// Creates release metadata for a repository tag.
+  public init(
+    id: Int,
+    tagName: String,
+    name: String?,
+    body: String?,
+    htmlURL: URL,
+    publishedAt: Date?,
+    assets: [GitHubAsset],
+    prerelease: Bool,
+    draft: Bool
+  ) {
+    self.id = id
+    self.tagName = tagName
+    self.name = name
+    self.body = body
+    self.htmlURL = htmlURL
+    self.publishedAt = publishedAt
+    self.assets = assets
+    self.prerelease = prerelease
+    self.draft = draft
+  }
+
   /// Returns an asset matching the given regex pattern.
   ///
   /// Use this method when you need to select a specific asset from releases
@@ -181,6 +201,23 @@ public struct GitHubAsset: Codable, Sendable, Identifiable {
     formatter.allowedUnits = [.useKB, .useMB, .useGB]
     formatter.countStyle = .file
     return formatter.string(fromByteCount: Int64(size))
+  }
+
+  /// Creates metadata for a downloadable release asset.
+  public init(
+    id: Int,
+    name: String,
+    browserDownloadURL: URL,
+    size: Int,
+    contentType: String,
+    downloadCount: Int
+  ) {
+    self.id = id
+    self.name = name
+    self.browserDownloadURL = browserDownloadURL
+    self.size = size
+    self.contentType = contentType
+    self.downloadCount = downloadCount
   }
 
   private enum CodingKeys: String, CodingKey {
