@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.3.0] - 2026-10-17
+
+### Added
+
+- A `GitHubReleaseDiscovery` library product holding `GitHubAPIClient`,
+  `SemanticVersion`, the release and asset models, and the update-check errors.
+  It depends only on Foundation and swift-log, so an app that presents its own
+  release UI can check for releases without linking MarkdownUI or the
+  download, installation and relaunch code. `GitHubUpdateChecker` depends on
+  it and re-exports the same names, so existing imports keep compiling.
+
 ## [2.2.0] - 2026-10-04
 
 ### Changed
