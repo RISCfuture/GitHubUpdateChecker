@@ -11,7 +11,7 @@ public import SwiftUI
 /// A SwiftUI view that displays release notes with Markdown rendering.
 ///
 /// Use this view when building custom update UIs to display release notes
-/// from a ``GitHubRelease``. The view automatically handles empty content
+/// from a ``GitHubRelease-typealias``. The view automatically handles empty content
 /// with a placeholder message and renders Markdown formatting.
 ///
 /// ## Usage

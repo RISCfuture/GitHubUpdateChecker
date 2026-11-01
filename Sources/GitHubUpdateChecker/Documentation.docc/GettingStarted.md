@@ -131,7 +131,7 @@ checker.assetPattern = ".*-arm64\\.dmg$"  // Match ARM64 DMG files
 
 ## How Version Comparison Works
 
-GitHubUpdateChecker uses ``SemanticVersion`` for version comparison. Versions are
+GitHubUpdateChecker uses ``SemanticVersion-typealias`` for version comparison. Versions are
 parsed and compared numerically:
 
 - Prefixes like `v` or `version` are stripped
@@ -139,7 +139,7 @@ parsed and compared numerically:
 - Missing components default to 0 (`1.0` = `1.0.0`)
 - Prerelease suffixes are stored but not compared (`1.0.0-beta` = `1.0.0`)
 
-Since ``SemanticVersion`` conforms to `Comparable`, you can compare versions directly:
+Since ``SemanticVersion-typealias`` conforms to `Comparable`, you can compare versions directly:
 
 ```swift
 let v1 = SemanticVersion("1.2.0")!

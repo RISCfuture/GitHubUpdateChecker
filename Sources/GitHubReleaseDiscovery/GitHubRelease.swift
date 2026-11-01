@@ -72,7 +72,7 @@ public struct GitHubRelease: Codable, Sendable, Identifiable {
 
   /// The semantic version parsed from the tag name.
   ///
-  /// This property parses the tag name into a ``SemanticVersion``, stripping
+  /// This property parses the tag name into a ``SemanticVersion-struct``, stripping
   /// common prefixes like "v" or "version".
   /// For example, a tag of "v1.2.0" returns `SemanticVersion(1, 2, 0)`.
   ///

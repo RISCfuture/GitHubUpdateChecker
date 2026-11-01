@@ -40,7 +40,7 @@ public import Foundation
 public enum UpdateCheckResult: Sendable {
   /// A new version is available for download.
   ///
-  /// The associated ``GitHubRelease`` contains version information,
+  /// The associated ``GitHubRelease-struct`` contains version information,
   /// release notes, and downloadable assets.
   case updateAvailable(GitHubRelease)
 
@@ -52,12 +52,12 @@ public enum UpdateCheckResult: Sendable {
   /// An update exists but the user has chosen to skip this version.
   ///
   /// The user previously clicked "Skip This Version" for this release.
-  /// The associated ``GitHubRelease`` is provided for reference.
+  /// The associated ``GitHubRelease-struct`` is provided for reference.
   case skippedVersion(GitHubRelease)
 
   /// An error occurred while checking for updates.
   ///
-  /// See ``UpdateCheckError`` for possible error types.
+  /// See ``UpdateCheckError-enum`` for possible error types.
   case error(UpdateCheckError)
 
   /// Whether an actionable update is available.
@@ -73,7 +73,7 @@ public enum UpdateCheckResult: Sendable {
 
   /// The release associated with this result, if any.
   ///
-  /// Returns the ``GitHubRelease`` for both ``updateAvailable(_:)``
+  /// Returns the ``GitHubRelease-struct`` for both ``updateAvailable(_:)``
   /// and ``skippedVersion(_:)`` cases. Returns `nil` for
   /// ``noUpdateAvailable`` and ``error(_:)``.
   public var release: GitHubRelease? {

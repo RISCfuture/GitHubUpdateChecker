@@ -71,14 +71,14 @@ struct MyApp: App {
 
 ### Update Results
 
-- ``UpdateCheckResult``
-- ``UpdateCheckError``
+- ``UpdateCheckResult-typealias``
+- ``UpdateCheckError-typealias``
 
 ### GitHub API Types
 
-- ``GitHubRelease``
-- ``GitHubAsset``
+- ``GitHubRelease-typealias``
+- ``GitHubAsset-typealias``
 
 ### Version Comparison
 
-- ``SemanticVersion``
+- ``SemanticVersion-typealias``
