@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [2.3.1] - 2026-11-06
 
 ### Fixed
 
