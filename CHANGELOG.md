@@ -1,5 +1,19 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- Error and “up to date” alerts no longer hold the main actor while they are
+  on screen. They appear as a sheet on the update window when it is open, and
+  otherwise as an app-modal alert whose modal session lets main-actor work keep
+  running.
+- When GitHub rate-limits the update check, the alert now says “Can’t check
+  for updates right now” and to try again later, instead of reporting a
+  network error and a fixed 60-requests-per-hour limit. Only a 403 or 429 that
+  carries GitHub’s rate-limit headers counts as rate limiting; any other 403
+  is reported as an unexpected response.
+
 ## [2.3.0] - 2026-10-17
 
 ### Added

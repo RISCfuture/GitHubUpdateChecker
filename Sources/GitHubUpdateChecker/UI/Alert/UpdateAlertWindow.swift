@@ -91,6 +91,8 @@
     }
 
     /// Show the "no updates available" alert
+    ///
+    /// Returns immediately; the alert stays on screen until the user dismisses it.
     /// - Parameter currentVersion: The current app version
     public func showNoUpdatesAvailable(currentVersion: SemanticVersion) {
       let appName = Bundle.main.appName
@@ -101,7 +103,7 @@
         "You’re running version \(currentVersion), which is the latest version available."
       alert.alertStyle = .informational
       alert.addButton(withTitle: "OK")
-      alert.runModal()
+      present(alert)
     }
 
     /// Show an error alert for update check errors
@@ -117,6 +119,9 @@
     }
 
     /// Show an error alert for any LocalizedError
+    ///
+    /// Returns immediately; the alert stays on screen until the user dismisses it. While the update
+    /// window is open the alert appears as a sheet on it.
     /// - Parameter error: The error to display
     public func showErrorAlert(_ error: some LocalizedError) {
       let alert = NSAlert()
@@ -139,7 +144,7 @@
 
       alert.alertStyle = .warning
       alert.addButton(withTitle: "OK")
-      alert.runModal()
+      present(alert)
     }
 
     /// Dismiss the current window
@@ -152,6 +157,29 @@
     }
 
     // MARK: - Private Methods
+
+    /// Present an alert without holding the main actor while it is on screen.
+    ///
+    /// A sheet is not modal to the run loop at all. An app-modal alert runs its modal session from a
+    /// run-loop block rather than from the current main-queue job, so the main queue, and with it the
+    /// main actor, keeps draining inside that session.
+    private func present(_ alert: NSAlert) {
+      if let window, window.isVisible {
+        alert.beginSheetModal(for: window)
+      } else {
+        runModalOutsideMainQueue(alert)
+      }
+    }
+
+    private func runModalOutsideMainQueue(_ alert: NSAlert) {
+      CFRunLoopPerformBlock(CFRunLoopGetMain(), CFRunLoopMode.commonModes.rawValue) {
+        MainActor.assumeIsolated {
+          NSApp.activate()
+          _ = alert.runModal()
+        }
+      }
+      CFRunLoopWakeUp(CFRunLoopGetMain())
+    }
 
     /// Keep the close button in step with the model, for as long as the alert is on screen.
     ///

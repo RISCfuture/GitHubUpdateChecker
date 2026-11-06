@@ -216,46 +216,43 @@ public actor GitHubAPIClient {
   }
 
   private func validateResponse(_ response: HTTPURLResponse) throws {
-    switch response.statusCode {
-      case 200...299:
-        logger.trace(
-          "Response validated",
-          metadata: [
-            "statusCode": "\(response.statusCode)"
-          ]
-        )
-        return
-      case 404:
-        logger.warning(
-          "Repository not found",
-          metadata: [
-            "statusCode": "\(response.statusCode)"
-          ]
-        )
-        throw UpdateCheckError.repositoryNotFound
-      case 403:
-        let remaining = response.value(forHTTPHeaderField: "X-RateLimit-Remaining")
-        let resetTime = response.value(forHTTPHeaderField: "X-RateLimit-Reset")
-        logger.warning(
-          "Rate limit or forbidden",
-          metadata: [
-            "statusCode": "\(response.statusCode)",
-            "rateLimitRemaining": "\(remaining ?? "unknown")",
-            "rateLimitReset": "\(resetTime ?? "unknown")"
-          ]
-        )
-        if remaining == "0" {
-          throw UpdateCheckError.rateLimitExceeded
-        }
-        throw UpdateCheckError.rateLimitExceeded
-      default:
-        logger.error(
-          "Unexpected response status",
-          metadata: [
-            "statusCode": "\(response.statusCode)"
-          ]
-        )
-        throw UpdateCheckError.invalidResponse
+    guard let error = Self.error(for: response) else {
+      logger.trace("Response validated", metadata: ["statusCode": "\(response.statusCode)"])
+      return
     }
+    logger.warning(
+      "Request failed",
+      metadata: [
+        "statusCode": "\(response.statusCode)",
+        "rateLimitRemaining":
+          "\(response.value(forHTTPHeaderField: "X-RateLimit-Remaining") ?? "unknown")",
+        "rateLimitReset": "\(response.value(forHTTPHeaderField: "X-RateLimit-Reset") ?? "unknown")",
+        "error": "\(error)"
+      ]
+    )
+    throw error
+  }
+}
+
+// MARK: - Response Classification
+
+extension GitHubAPIClient {
+  private static let rateLimitStatusCodes: Set<Int> = [403, 429]
+
+  /// The error a GitHub API response represents, or `nil` for a success.
+  static func error(for response: HTTPURLResponse) -> UpdateCheckError? {
+    switch response.statusCode {
+      case 200...299: nil
+      case 404: .repositoryNotFound
+      case _ where isRateLimited(response): .rateLimitExceeded
+      default: .invalidResponse
+    }
+  }
+
+  /// Whether GitHub rejected the request for exceeding its primary or secondary rate limit.
+  private static func isRateLimited(_ response: HTTPURLResponse) -> Bool {
+    rateLimitStatusCodes.contains(response.statusCode)
+      && (response.value(forHTTPHeaderField: "X-RateLimit-Remaining") == "0"
+        || response.value(forHTTPHeaderField: "Retry-After") != nil)
   }
 }

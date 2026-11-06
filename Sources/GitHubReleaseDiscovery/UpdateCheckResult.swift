@@ -100,7 +100,12 @@ public enum NetworkError: Error, LocalizedError, Sendable {
   case rateLimitExceeded
 
   public var errorDescription: String? {
-    String(localized: "A network error occurred.", bundle: .module)
+    switch self {
+      case .requestFailed, .invalidResponse:
+        return String(localized: "A network error occurred.", bundle: .module)
+      case .rateLimitExceeded:
+        return String(localized: "Can’t check for updates right now.", bundle: .module)
+    }
   }
 
   public var failureReason: String? {
@@ -117,7 +122,8 @@ public enum NetworkError: Error, LocalizedError, Sendable {
         )
       case .rateLimitExceeded:
         return String(
-          localized: "The GitHub API rate limit of 60 requests per hour has been exceeded.",
+          localized:
+            "The update server is busy.",
           bundle: .module
         )
     }
@@ -137,7 +143,7 @@ public enum NetworkError: Error, LocalizedError, Sendable {
         )
       case .rateLimitExceeded:
         return String(
-          localized: "Wait a few minutes before trying again.",
+          localized: "Try again later.",
           bundle: .module
         )
     }
@@ -286,8 +292,10 @@ public enum UpdateCheckError: Error, LocalizedError, Sendable {
 
   public var errorDescription: String? {
     switch self {
-      case .networkError, .invalidResponse, .rateLimitExceeded:
+      case .networkError, .invalidResponse:
         return String(localized: "A network error occurred.", bundle: .module)
+      case .rateLimitExceeded:
+        return String(localized: "Can’t check for updates right now.", bundle: .module)
       case .noReleasesFound, .repositoryNotFound:
         return String(localized: "A repository error occurred.", bundle: .module)
       case .invalidVersion:
@@ -316,7 +324,8 @@ public enum UpdateCheckError: Error, LocalizedError, Sendable {
         )
       case .rateLimitExceeded:
         return String(
-          localized: "The GitHub API rate limit of 60 requests per hour has been exceeded.",
+          localized:
+            "The update server is busy.",
           bundle: .module
         )
       case .repositoryNotFound:
@@ -356,7 +365,7 @@ public enum UpdateCheckError: Error, LocalizedError, Sendable {
         )
       case .rateLimitExceeded:
         return String(
-          localized: "Wait a few minutes before trying again.",
+          localized: "Try again later.",
           bundle: .module
         )
       case .repositoryNotFound:
